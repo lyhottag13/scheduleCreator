@@ -25,8 +25,8 @@ public class App {
         System.out.println("How many classes do you need to schedule?");
         while (true) {
             try {
-                arrayOfClassTypes = new ArrayList[Integer.parseInt(scan.nextLine())];
-                if (arrayOfClassTypes.length <= 0 || arrayOfClassTypes.length > 7) {
+                int numberOfClasses = Integer.parseInt(scan.nextLine());
+                if (numberOfClasses <= 0 || numberOfClasses > 7) {
                     throw new Exception();
                 }
                 break;
@@ -34,6 +34,7 @@ public class App {
                 System.out.println("Enter a valid number!");
             }
         }
+        arrayOfClassTypes = new ArrayList[numberOfClasses];
         names = new String[arrayOfClassTypes.length];
 
         System.out.println(
@@ -66,10 +67,10 @@ public class App {
             } catch (Exception e) {
             }
         }
-        ListOfCourses<Course> list = new ListOfCourses<Course>();
+        ListOfCourses<Course> temporaryList = new ListOfCourses<Course>();
 
         try {
-            parseCombinations(list, arrayOfClassTypes.length - 1);
+            parseCombinations(temporaryList, arrayOfClassTypes.length - 1);
         } catch (Exception e) {
 
         }
