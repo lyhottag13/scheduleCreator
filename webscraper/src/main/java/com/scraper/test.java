@@ -8,7 +8,5 @@ public class test {
         // System.out.println(classList.addClass(one));
         // System.out.println(classList.addClass(two));
         // System.out.println(classList.addClass(three));
-        ListOfClasses<Course> list = new ListOfClasses<>();
-
     }
 }
