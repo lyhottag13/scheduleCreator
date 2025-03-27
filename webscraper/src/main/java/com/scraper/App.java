@@ -14,7 +14,9 @@ public class App {
     private static Scanner scan;
     private static String[] names;
     private static int[] timeConstraints;
+    private static boolean williamsIncluded;
     private static ArrayList<ListOfCourses<Course>> goodList;
+
     @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         scan = new Scanner(System.in);
@@ -23,9 +25,10 @@ public class App {
 
         System.out.println("=================================================");
         System.out.println("How many classes do you need to schedule?");
+        int numberOfClasses;
         while (true) {
             try {
-                int numberOfClasses = Integer.parseInt(scan.nextLine());
+                numberOfClasses = Integer.parseInt(scan.nextLine());
                 if (numberOfClasses <= 0 || numberOfClasses > 7) {
                     throw new Exception();
                 }
@@ -35,7 +38,7 @@ public class App {
             }
         }
         arrayOfClassTypes = new ArrayList[numberOfClasses];
-        names = new String[arrayOfClassTypes.length];
+        names = new String[numberOfClasses];
 
         System.out.println(
                 "What's your desired minimum and maximum times? (Format: ####, as in military time. Enter in two different lines)");
@@ -52,8 +55,24 @@ public class App {
                 System.out.println("Enter valid times!");
             }
         }
+        System.out.println(
+                "Would you like your classes to be all-Pecos or a mix of Pecos and Williams? (P for Pecos, W for Williams and Pecos");
+        while (true) {
+            char temp;
+            try {
+                temp = scan.nextLine().toLowerCase().charAt(0);
+                if (temp == 'p') {
+                    williamsIncluded = false;
+                    break;
+                } else if (temp == 'w') {
+                    williamsIncluded = true;
+                    break;
+                }
+            } catch (Exception e) {
+                System.out.println("Enter a valid input!");
+            }
+        }
         System.out.println("Enter your classes, line-by-line! (Format: AAA###)");
-        
         for (int i = 0; i < names.length; i++) {
             names[i] = scan.nextLine();
         }
@@ -65,14 +84,17 @@ public class App {
                 arrayOfClassTypes[i] = scrape(url2);
                 System.out.println(arrayOfClassTypes[i]);
             } catch (Exception e) {
+                System.out.println("INVALID SCRAPE");
+                e.printStackTrace();
             }
         }
+
         ListOfCourses<Course> temporaryList = new ListOfCourses<Course>();
-
         try {
-            parseCombinations(temporaryList, arrayOfClassTypes.length - 1);
+            parseCombinations(temporaryList, numberOfClasses - 1);
         } catch (Exception e) {
-
+            System.out.println("INVALID PARSE");
+            e.printStackTrace();
         }
 
         {
@@ -105,7 +127,7 @@ public class App {
     }
 
     /**
-     * Parses all the combinations possible and, if its a valid schedule, then it
+     * Parses all the combinations possible and, if it finds a valid schedule, then
      * adds it to the list of valid schedules.
      * 
      * @param list  a list of courses.
@@ -141,7 +163,7 @@ public class App {
             Elements classRows = content.select("table tbody tr.class-specs*");
             for (Element row : classRows) {
                 String checker = row.select(".class-location div").text();
-                if (checker.contains("Online") || checker.contains("Pecos")) {
+                if (filterClasses(checker)) {
                     int ID = Integer.parseInt(row.select(".class-number").text());
                     boolean isOnline = row.select(".class-delivery div").text().contains("Online");
                     String stringOfDays = row.select(".class-days").text().trim();
@@ -151,7 +173,7 @@ public class App {
                             numberOfDays++;
                     }
                     int[][] times1 = new int[numberOfDays][1];
-                    for (int i = 0; i < times1.length; i++) {
+                    for (int i = 0; i < numberOfDays; i++) {
                         times1[i] = convertToMilitaryTime(row.select(".class-times div").text());
                     }
                     times1 = convertAllTimes(times1, stringOfDays);
@@ -163,6 +185,20 @@ public class App {
     }
 
     /**
+     * Filters the classes based on whether or not the user wanted a mix of courses
+     * from
+     * both campi, or just classes from the Pecos campus.
+     * 
+     * @param checker a string representation of the course's location.
+     * @return a boolean that tells whether or not the class is valid based on the
+     *         user's stipulations.
+     */
+    public static boolean filterClasses(String checker) {
+        return checker.contains("Online") || checker.contains("Pecos")
+                || (checker.contains("Williams") && williamsIncluded);
+    }
+
+    /**
      * Converts the time to military standard to make them easier to compare with
      * other classes and determine class compatibility.
      * 
@@ -170,28 +206,27 @@ public class App {
      * @return an int array of the start and end times.
      */
     public static int[] convertToMilitaryTime(String timeString) {
-        if (timeString.charAt(0) == 'N')
-            return new int[] { 0, 0 };
-        int[] listOfTimes = new int[2];
+        int[] listOfTimes = new int[] { 0, 0 };
+        if (timeString.charAt(0) == 'N') {
+            return listOfTimes;
+        }
         Scanner scan = new Scanner(timeString);
         scan.useDelimiter(" ");
-        // System.out.print(scan.next() + scan.next());
-        String line = scan.next();
-        Scanner scan2 = new Scanner(line);
-        scan2.useDelimiter("[:AMPM]+");
-        listOfTimes[0] = (line.endsWith("PM") && !line.startsWith("12"))
-                ? (Integer.parseInt(scan2.next()) + 12) * 100 + Integer.parseInt(scan2.next())
-                : Integer.parseInt(scan2.next()) * 100 + Integer.parseInt(scan2.next());
-        scan2.close();
-        scan.next();
-        line = scan.next();
-        scan2 = new Scanner(line);
-        scan2.useDelimiter("[:AMPM]+");
-        listOfTimes[1] = (line.endsWith("PM") && !line.startsWith("12"))
-                ? (Integer.parseInt(scan2.next()) + 12) * 100 + Integer.parseInt(scan2.next())
-                : Integer.parseInt(scan2.next()) * 100 + Integer.parseInt(scan2.next());
+        String line;
+        Scanner scan2;
+        for (int i = 0; i < 2; i++) {
+            line = scan.next();
+            scan2 = new Scanner(line);
+            scan2.useDelimiter("[:AMPM]+");
+            listOfTimes[i] = (line.endsWith("PM") && !line.startsWith("12"))
+                    ? (Integer.parseInt(scan2.next()) + 12) * 100 + Integer.parseInt(scan2.next())
+                    : Integer.parseInt(scan2.next()) * 100 + Integer.parseInt(scan2.next());
+            if (scan.hasNext()) {
+                scan.next();
+            }
+            scan2.close();
+        }
         scan.close();
-        scan2.close();
         return listOfTimes;
     }
 
