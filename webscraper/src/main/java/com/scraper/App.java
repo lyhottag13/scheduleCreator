@@ -242,31 +242,31 @@ public class App {
     }
 
     /**
-     * Parses all the combinations possible and, if it finds a valid schedule, then
+     * Parses all the in-person combinations possible and, if it finds a valid
+     * schedule, then
      * adds it to the list of valid schedules.
      * 
      * @param listOfCourses a list of courses.
      * @param level         the level at which we are currently on. This number
-     *                      decreases
-     *                      per loop, until we reach the final level.
+     *                      decreases per loop, until we reach the final level.
      */
     public static void parseCombinations(ListOfCourses<Course> listOfCourses, int level) {
         for (int i = 0; i < classSchedules[level].size(); i++) {
             listOfCourses.add(classSchedules[level].get(i));
-            if (level == 0 && ListOfCourses.isValidList(listOfCourses, timeConstraints)) {
-                if (ListOfCourses.isValidList2(listOfCourses, timeConstraints)) {
+            if (!ListOfCourses.containsOnlineCourse(listOfCourses)) {
+                if (level == 0 && ListOfCourses.isValidList(listOfCourses, timeConstraints)) {
                     validSchedules.add(new ListOfCourses<Course>(listOfCourses));
+                } else if (level != 0) {
+                    parseCombinations(listOfCourses, level - 1);
                 }
-            } else if (level != 0) {
-                parseCombinations(listOfCourses, level - 1);
             }
             listOfCourses.removeLast();
         }
     }
 
     /**
-     * Creates a list of courses and adds it to the main list of courses for this
-     * specific class.
+     * Creates a list of courses and adds it to the main list of courses for a
+     * specific course type.
      * 
      * @param content the main content of a class, like MAT240 and the table
      *                underneath.
@@ -350,11 +350,10 @@ public class App {
 
     /**
      * Converts each military time to a time that includes a representation of the
-     * day.
-     * For example, if the class happens on a Monday, the time 800 (representing
-     * 8:00 AM) will now display 10800.
-     * If it was Tuesday, then 20800. Wednesday, 30800, and so on. This makes it
-     * easier for the comparisons to be made later.
+     * day. For example, if the class happens on a Monday, the time 800
+     * (representing 8:00 AM) will now display 10800. If it was Tuesday, then 20800.
+     * Wednesday, 30800, and so on. This makes it easier for the program to make
+     * compatibility checks later.
      * 
      * @param times a list of the start and end times.
      * @param day   a string representation of the day that this time takes place
