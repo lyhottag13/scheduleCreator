@@ -1,5 +1,5 @@
 package com.scraper;
-public class test {
+public class Test {
     public static void main(String[] args) {
         // ListOfClasses classList = new ListOfClasses();
         // Course one = new Course(1, false, new int[]{1200, 1400});
