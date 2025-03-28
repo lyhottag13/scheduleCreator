@@ -10,19 +10,6 @@ public class ListOfCourses<E> extends LinkedList<Course> {
     }
     public ListOfCourses() {}
     /**
-     * Checks to see if 
-     * @param list
-     * @param newClass
-     * @return
-     */
-    public static boolean isValid(ListOfCourses<Course> list, Course newClass) {
-        for (Course c : list) {
-            if (!isCompatible(c, newClass) || newClass.isOnline())
-                return false;
-        }
-        return true;
-    }
-    /**
      * Checks to see if the entire list of courses has no overlap.
      * @param list the list of courses.
      * @return a boolean representation of the list's validity.
@@ -31,15 +18,25 @@ public class ListOfCourses<E> extends LinkedList<Course> {
         Course course;
         for (int i = 0; i < list.size(); i++) {
             course = list.get(i);
-            if (course.isOnline() || !isWithinTimeConstraints(course, constraints)) {
-                return false;
-            }
             for (int j = 0; j < i; j++) {
                 if (!isCompatible(course, list.get(j))) {
                     return false;
                 }
             }
+            if (course.isOnline()) {
+                return false;
+            }
         }
+        return true;
+    }
+    public static boolean isValidList2(ListOfCourses<Course> list, int[] constraints) {
+        for (Course c : list) {
+            if (!isWithinTimeConstraints(c, constraints)) {
+                App.totalPossibleSchedules++;
+                return false;
+            }
+        }
+        App.totalPossibleSchedules++;
         return true;
     }
     public static boolean isWithinTimeConstraints(Course course, int[] constraints) {

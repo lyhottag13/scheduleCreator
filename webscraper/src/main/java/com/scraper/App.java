@@ -10,22 +10,87 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class App {
-    private static ArrayList<Course>[] arrayOfClassTypes;
+    public static int totalPossibleSchedules = 0;
+    private static ArrayList<Course>[] classSchedules;
     private static Scanner scan;
-    private static String[] names;
+    private static String[] classNames;
     private static int[] timeConstraints;
     private static boolean williamsIncluded;
-    private static ArrayList<ListOfCourses<Course>> goodList;
+    private static ArrayList<ListOfCourses<Course>> validSchedules;
+    private static int numberOfClasses;
+    private static int courseYear;
+    private static int courseSemester;
 
-    @SuppressWarnings("unchecked")
     public static void main(String[] args) {
         scan = new Scanner(System.in);
-        goodList = new ArrayList<ListOfCourses<Course>>();
-        timeConstraints = new int[2];
+        courseYear = -1;
+        courseSemester = -1;
+        while (true) {
+            validSchedules = new ArrayList<ListOfCourses<Course>>();
+            totalPossibleSchedules = 0;
+            System.out.println("=================================================");
+            readUserInputs();
 
-        System.out.println("=================================================");
-        System.out.println("How many classes do you need to schedule?");
-        int numberOfClasses;
+            for (int i = 0; i < numberOfClasses; i++) {
+                String url2 = "https://classes.sis.maricopa.edu/?keywords=" + classNames[i].toLowerCase()
+                        + "&all_classes=false&terms%5B%5D=" + (4250 + (courseYear - 2024) * 6 + courseSemester)
+                        + "&institutions%5B%5D=CGC08&subject_code=&credit_career=B&credits_min=gte0&credits_max=lte9&start_hour=&end_hour=&startafter=&instructors=";
+                try {
+                    classSchedules[i] = scrape(url2);
+                    System.out.println(classSchedules[i]);
+                } catch (Exception e) {
+                    System.out.println("INVALID SCRAPE");
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                parseCombinations(numberOfClasses - 1);
+            } catch (Exception e) {
+                System.out.println("INVALID PARSE");
+                e.printStackTrace();
+            }
+
+            System.out.println("\n============ POSSIBLE SCHEDULES ============");
+            if (validSchedules.size() == 0) {
+                System.out.println("No possible combinations, sorry! Retry with different limits.");
+                for (int i = 0; i < numberOfClasses; i++) {
+                    if (classSchedules[i].get(classSchedules[i].size() - 1).isOnline()) {
+                        System.out.println(classSchedules[i].get(0).name() + " is avaliable online!");
+                    }
+                }
+            } else {
+                for (int i = 0; i < validSchedules.size(); i++) {
+                    System.out.println("Schedule " + (i + 1) + ":\n" + validSchedules.get(i));
+                }
+            }
+            System.out.println("Based on your time filters, I displayed " + validSchedules.size() + " of "
+                    + totalPossibleSchedules + " possible schedules.");
+            System.out.println("Would you like to try again? Y/N");
+            String yesOrNo = scan.nextLine().toLowerCase();
+            if (yesOrNo.equals("n")) {
+                break;
+            }
+        }
+        scan.close();
+    }
+
+    /**
+     * Scans all the user inputs for their desired classes. If I come up with more
+     * valid stipulations, I can just add it to the list here.
+     */
+    public static void readUserInputs() {
+        readNumberOfClasses();
+        readTimeLimits();
+        readCampus();
+        readYear();
+        readSemester();
+        readClassNames();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void readNumberOfClasses() {
+        System.out.println("How many in-person classes do you need to schedule?");
         while (true) {
             try {
                 numberOfClasses = Integer.parseInt(scan.nextLine());
@@ -37,11 +102,14 @@ public class App {
                 System.out.println("Enter a valid number!");
             }
         }
-        arrayOfClassTypes = new ArrayList[numberOfClasses];
-        names = new String[numberOfClasses];
+        classSchedules = new ArrayList[numberOfClasses];
+        classNames = new String[numberOfClasses];
+    }
 
+    public static void readTimeLimits() {
         System.out.println(
-                "What's your desired minimum and maximum times? (Format: ####, as in military time. Enter in two different lines)");
+                "What's your earliest and latest times? (Format: ####, as in military time. Enter in two different lines)");
+        timeConstraints = new int[2];
         while (true) {
             try {
                 for (int i = 0; i < timeConstraints.length; i++) {
@@ -55,6 +123,9 @@ public class App {
                 System.out.println("Enter valid times!");
             }
         }
+    }
+
+    public static void readCampus() {
         System.out.println(
                 "Would you like your classes to be all-Pecos or a mix of Pecos and Williams? (P for Pecos, W for Williams and Pecos");
         while (true) {
@@ -72,77 +143,70 @@ public class App {
                 System.out.println("Enter a valid input!");
             }
         }
-        System.out.println("Enter your classes, line-by-line! (Format: AAA###)");
-        for (int i = 0; i < names.length; i++) {
-            names[i] = scan.nextLine();
-        }
-
-        for (int i = 0; i < names.length; i++) {
-            String url2 = "https://classes.sis.maricopa.edu/?keywords=" + names[i].toLowerCase()
-                    + "&all_classes=false&terms%5B%5D=4252&terms%5B%5D=4254&terms%5B%5D=4256&institutions%5B%5D=CGC08&subject_code=&credit_career=B&credits_min=gte0&credits_max=lte9&start_hour=&end_hour=&startafter=&instructors=";
-            try {
-                arrayOfClassTypes[i] = scrape(url2);
-                System.out.println(arrayOfClassTypes[i]);
-            } catch (Exception e) {
-                System.out.println("INVALID SCRAPE");
-                e.printStackTrace();
-            }
-        }
-
-        ListOfCourses<Course> temporaryList = new ListOfCourses<Course>();
-        try {
-            parseCombinations(temporaryList, numberOfClasses - 1);
-        } catch (Exception e) {
-            System.out.println("INVALID PARSE");
-            e.printStackTrace();
-        }
-
-        {
-            // for (int i = 0; i < arrayOfClassTypes[0].size(); i++) {
-            // list.add(arrayOfClassTypes[0].get(i));
-            // for (int j = 0; j < arrayOfClassTypes[1].size(); j++) {
-            // list.add(arrayOfClassTypes[1].get(j));
-            // for (int k = 0; k < arrayOfClassTypes[2].size(); k++) {
-            // list.add(arrayOfClassTypes[2].get(k));
-            // if (ListOfClasses.isValidList(list, timeConstraints)) {
-            // goodList.add(new ListOfClasses<Course>(list));
-            // }
-            // list.removeLast();
-            // }
-            // list.removeLast();
-            // }
-            // list.removeLast();
-            // }
-        }
-
-        System.out.println("\n============ POSSIBLE SCHEDULES ============");
-        if (goodList.size() == 0) {
-            System.out.println("No possible combinations, sorry!");
-        } else {
-            for (int i = 0; i < goodList.size(); i++) {
-                System.out.println("Schedule " + (i + 1) + ":\n" + goodList.get(i));
-            }
-        }
-        scan.close();
     }
 
-    /**
-     * Parses all the combinations possible and, if it finds a valid schedule, then
-     * adds it to the list of valid schedules.
-     * 
-     * @param list  a list of courses.
-     * @param level the level at which we are currently on. This number decreases
-     *              per loop, until we reach the final level.
-     */
-    public static void parseCombinations(ListOfCourses<Course> list, int level) {
-        for (int i = 0; i < arrayOfClassTypes[level].size(); i++) {
-            list.add(arrayOfClassTypes[level].get(i));
-            if (level == 0 && ListOfCourses.isValidList(list, timeConstraints)) {
-                goodList.add(new ListOfCourses<Course>(list));
-            } else if (level != 0) {
-                parseCombinations(list, level - 1);
+    public static void readYear() {
+        if (courseYear != -1) {
+            return;
+        }
+        System.out.println("What year are your courses?");
+        while (true) {
+            try {
+                courseYear = Integer.parseInt(scan.nextLine());
+                if (courseYear < 2025 || courseYear > 2100) {
+                    throw new Exception();
+                }
+                break;
+            } catch (Exception e) {
+                System.out.println("Enter a valid input!");
             }
-            list.removeLast();
+        }
+    }
+
+    public static void readSemester() {
+        if (courseSemester != -1) {
+            return;
+        }
+        System.out.println("What semester are your courses? (Fall, Spring, Summer)");
+        while (true) {
+            String semesterCalculator;
+            try {
+                semesterCalculator = scan.nextLine().toLowerCase();
+                switch (semesterCalculator) {
+                    case "autumn":
+                    case "fall":
+                        courseSemester = 0;
+                        break;
+                    case "spring":
+                        courseSemester = 2;
+                        break;
+                    case "summer":
+                        courseSemester = 4;
+                        break;
+                    default:
+                        throw new Exception();
+                }
+                break;
+            } catch (Exception e) {
+                System.out.println("Enter a valid input!");
+            }
+        }
+    }
+
+    public static void readClassNames() {
+        System.out.println("Enter your classes, line-by-line! (Format: AAA###)");
+        while (true) {
+            try {
+                for (int i = 0; i < classNames.length; i++) {
+                    classNames[i] = scan.nextLine();
+                    if (classNames[i].length() > 6) {
+                        throw new Exception();
+                    }
+                }
+                break;
+            } catch (Exception e) {
+                System.out.println("Enter valid inputs!");
+            }
         }
     }
 
@@ -160,42 +224,77 @@ public class App {
         Document document = Jsoup.connect(url).get();
         Elements classContent = document.select(".course");
         for (Element content : classContent) {
-            Elements classRows = content.select("table tbody tr.class-specs*");
-            for (Element row : classRows) {
-                String checker = row.select(".class-location div").text();
-                if (filterClasses(checker)) {
-                    int ID = Integer.parseInt(row.select(".class-number").text());
-                    boolean isOnline = row.select(".class-delivery div").text().contains("Online");
-                    String stringOfDays = row.select(".class-days").text().trim();
-                    int numberOfDays = 1;
-                    for (int i = 0; i < stringOfDays.length(); i++) {
-                        if (stringOfDays.charAt(i) == ',')
-                            numberOfDays++;
-                    }
-                    int[][] times1 = new int[numberOfDays][1];
-                    for (int i = 0; i < numberOfDays; i++) {
-                        times1[i] = convertToMilitaryTime(row.select(".class-times div").text());
-                    }
-                    times1 = convertAllTimes(times1, stringOfDays);
-                    arrayList.add(new Course(content.select("h3").text().trim().substring(0, 6), ID, isOnline, times1));
-                }
-            }
+            createCourseList(content, arrayList);
         }
         return arrayList;
     }
 
     /**
-     * Filters the classes based on whether or not the user wanted a mix of courses
-     * from
-     * both campi, or just classes from the Pecos campus.
+     * Calls the other parseCombinations method, but prevents the temporary
+     * listOfCourses from existing outside the scope of this method.
      * 
-     * @param checker a string representation of the course's location.
-     * @return a boolean that tells whether or not the class is valid based on the
-     *         user's stipulations.
+     * @param numberOfLevels the number of levels the parser will need to iterate
+     *                       through.
      */
-    public static boolean filterClasses(String checker) {
-        return checker.contains("Online") || checker.contains("Pecos")
-                || (checker.contains("Williams") && williamsIncluded);
+    public static void parseCombinations(int numberOfLevels) {
+        ListOfCourses<Course> listOfCourses = new ListOfCourses<Course>();
+        parseCombinations(listOfCourses, numberOfLevels);
+    }
+
+    /**
+     * Parses all the combinations possible and, if it finds a valid schedule, then
+     * adds it to the list of valid schedules.
+     * 
+     * @param listOfCourses a list of courses.
+     * @param level         the level at which we are currently on. This number
+     *                      decreases
+     *                      per loop, until we reach the final level.
+     */
+    public static void parseCombinations(ListOfCourses<Course> listOfCourses, int level) {
+        for (int i = 0; i < classSchedules[level].size(); i++) {
+            listOfCourses.add(classSchedules[level].get(i));
+            if (level == 0 && ListOfCourses.isValidList(listOfCourses, timeConstraints)) {
+                if (ListOfCourses.isValidList2(listOfCourses, timeConstraints)) {
+                    validSchedules.add(new ListOfCourses<Course>(listOfCourses));
+                }
+            } else if (level != 0) {
+                parseCombinations(listOfCourses, level - 1);
+            }
+            listOfCourses.removeLast();
+        }
+    }
+
+    /**
+     * Creates a list of courses and adds it to the main list of courses for this
+     * specific class.
+     * 
+     * @param content the main content of a class, like MAT240 and the table
+     *                underneath.
+     * @param list    the main list that this method will add the current content's
+     *                courses to.
+     */
+    public static void createCourseList(Element content, ArrayList<Course> list) {
+        Elements classRows = content.select("table tbody tr.class-specs*");
+        for (Element row : classRows) {
+            String checker = row.select(".class-location div").text();
+            if (checker.contains("Online") || checker.contains("Pecos")
+                    || (checker.contains("Williams") && williamsIncluded)) {
+                int ID = Integer.parseInt(row.select(".class-number").text());
+                boolean isOnline = row.select(".class-delivery div").text().contains("Online");
+                String stringOfDays = row.select(".class-days").text().trim();
+                int numberOfDays = 1;
+                for (int i = 0; i < stringOfDays.length(); i++) {
+                    if (stringOfDays.charAt(i) == ',')
+                        numberOfDays++;
+                }
+                String[] times1 = new String[numberOfDays];
+                for (int i = 0; i < numberOfDays; i++) {
+                    times1[i] = row.select(".class-times div").text();
+                }
+                int[][] times2 = convertAllTimes(times1, stringOfDays);
+                list.add(new Course(content.select("h3").text().trim().substring(0, 6), ID, isOnline, times2));
+            }
+        }
     }
 
     /**
@@ -238,12 +337,12 @@ public class App {
      * @param days a string representation of the days, such as M,W.
      * @return a converted int matrix with all the times converted.
      */
-    public static int[][] convertAllTimes(int[][] list, String days) {
+    public static int[][] convertAllTimes(String[] list, String days) {
         Scanner scan = new Scanner(days);
         scan.useDelimiter(",");
         int[][] output = new int[list.length][1];
         for (int i = 0; i < output.length; i++) {
-            output[i] = convertToDay(list[i], scan.next());
+            output[i] = convertToDay(convertToMilitaryTime(list[i]), scan.next());
         }
         scan.close();
         return output;

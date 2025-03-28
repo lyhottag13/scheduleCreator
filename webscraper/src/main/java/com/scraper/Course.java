@@ -15,6 +15,6 @@ public record Course(String name, int ID, boolean isOnline, int[][] times) {
         for (int[] i : times) {
             output.append(i[0] + ":" + i[1] + " ");
         }
-        return name + " " + ID + " " + output;
+        return name + " " + ID + " " + output +  " ";
     }
 }
