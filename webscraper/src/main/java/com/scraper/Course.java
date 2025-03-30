@@ -13,7 +13,7 @@ public record Course(String name, int ID, boolean isOnline, int[][] times) {
     public String toString() {
         StringBuilder output = new StringBuilder();
         for (int[] i : times) {
-            output.append(i[0] + ":" + i[1] + " ");
+            output.append(i[0]).append(":").append(i[1]).append(" ");
         }
         return name + " " + ID + " " + output +  " ";
     }

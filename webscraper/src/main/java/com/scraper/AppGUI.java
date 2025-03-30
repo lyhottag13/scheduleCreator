@@ -139,7 +139,7 @@ public class AppGUI implements ActionListener, ChangeListener {
         {
             tryAgainButton = new JButton("Try Again?");
             tryAgainButton.addActionListener(this);
-    
+
             results = new JTextPane();
             results.setEditable(false);
             scrollPane = new JScrollPane();
@@ -151,7 +151,7 @@ public class AppGUI implements ActionListener, ChangeListener {
             backgroundPanel2.add(new JLabel("Possible Schedules"));
             backgroundPanel2.add(scrollPane);
             backgroundPanel2.add(tryAgainButton, BorderLayout.SOUTH);
-    
+
         }
 
         settingsPanel.setPreferredSize(new Dimension(800, 350));
@@ -201,7 +201,7 @@ public class AppGUI implements ActionListener, ChangeListener {
                 return;
             }
             String className = JOptionPane.showInputDialog(null, "What would you like to change this class to?");
-            if (className.length() == 0) {
+            if (className.isEmpty()) {
                 listModel.remove(classList.getSelectedIndex());
             } else if (!isValidName(className)) {
                 JOptionPane.showMessageDialog(null, "Enter a valid name", "Error", JOptionPane.ERROR_MESSAGE);
@@ -248,8 +248,7 @@ public class AppGUI implements ActionListener, ChangeListener {
         Scraper.totalPossibleSchedules = 0;
         try {
             results.setText(
-                    Scraper.scrapeValidSchedules(readCourseNumber(), readTimeConstraints(), readCampus(), readYear(),
-                            readSemester(), readCourseNames()) + "\nBased on your filters, I displayed "
+                    Scraper.scrapeValidSchedules(readCourseNumber(), readTimeConstraints(), readCampus(), readYear(), readCourseNames()) + "\nBased on your filters, I displayed "
                             + Scraper.getValidSchedules().size() + " of " + Scraper.totalPossibleSchedules
                             + " possible schedules.\n\n\n");
         } catch (Exception e) {
@@ -271,7 +270,7 @@ public class AppGUI implements ActionListener, ChangeListener {
     }
 
     private int readCourseNumber() throws Exception {
-        if (listModel.size() == 0) {
+        if (listModel.isEmpty()) {
             throw new Exception("The number of courses is invalid.");
         }
         return listModel.size();

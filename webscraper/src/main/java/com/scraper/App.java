@@ -10,7 +10,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class App {
-    private static int totalPossibleSchedules = 0;
+//    private static int totalPossibleSchedules = 0;
     private static ArrayList<Course>[] classSchedules;
     private static Scanner scan;
     private static String[] classNames;
@@ -26,8 +26,8 @@ public class App {
         courseYear = -1;
         courseSemester = -1;
         while (true) {
-            validSchedules = new ArrayList<ListOfCourses<Course>>();
-            totalPossibleSchedules = 0;
+            validSchedules = new ArrayList<>();
+//            totalPossibleSchedules = 0;
             System.out.println("=================================================");
             readUserInputs();
 
@@ -52,8 +52,8 @@ public class App {
             }
 
             printValidSchedules();
-            System.out.println("Based on your time filters, I displayed " + validSchedules.size() + " of "
-                    + totalPossibleSchedules + " possible schedules.");
+//            System.out.println("Based on your time filters, I displayed " + validSchedules.size() + " of "
+//                    + totalPossibleSchedules + " possible schedules.");
             System.out.println("Would you like to try again? Y/N");
             String yesOrNo = scan.nextLine().toLowerCase();
             if (yesOrNo.equals("n")) {
@@ -205,10 +205,10 @@ public class App {
      * @param url the url of the site that will be scraped.
      * @return an ArrayList representation of all the possible time slots for a
      *         single course.
-     * @throws IOException
+     * @throws IOException an exception if this scrape doesn't work for the provided url.
      */
     public static ArrayList<Course> scrape(String url) throws IOException {
-        ArrayList<Course> arrayList = new ArrayList<Course>();
+        ArrayList<Course> arrayList = new ArrayList<>();
         Document document = Jsoup.connect(url).get();
         Elements classContent = document.select(".course");
         for (Element content : classContent) {
@@ -225,7 +225,7 @@ public class App {
      *                       through.
      */
     public static void parseCombinations(int numberOfLevels) {
-        ListOfCourses<Course> listOfCourses = new ListOfCourses<Course>();
+        ListOfCourses<Course> listOfCourses = new ListOfCourses<>();
         parseCombinations(listOfCourses, numberOfLevels);
     }
 
@@ -243,7 +243,7 @@ public class App {
             listOfCourses.add(classSchedules[level].get(i));
             if (!ListOfCourses.containsOnlineCourse(listOfCourses)) {
                 if (level == 0 && ListOfCourses.isValidList(listOfCourses, timeConstraints)) {
-                    validSchedules.add(new ListOfCourses<Course>(listOfCourses));
+                    validSchedules.add(new ListOfCourses<>(listOfCourses));
                 } else if (level != 0) {
                     parseCombinations(listOfCourses, level - 1);
                 }
@@ -287,11 +287,11 @@ public class App {
 
     public static void printValidSchedules() {
         System.out.println("\n============ POSSIBLE SCHEDULES ============");
-        if (validSchedules.size() == 0) {
+        if (validSchedules.isEmpty()) {
             System.out.println("No possible combinations, sorry! Retry with different limits.");
             for (int i = 0; i < numberOfClasses; i++) {
-                if (classSchedules[i].get(classSchedules[i].size() - 1).isOnline()) {
-                    System.out.println(classSchedules[i].get(0).name() + " is avaliable online!");
+                if (classSchedules[i].getLast().isOnline()) {
+                    System.out.println(classSchedules[i].getFirst().name() + " is available online!");
                 }
             }
         } else {
@@ -319,7 +319,7 @@ public class App {
         for (int i = 0; i < 2; i++) {
             line = scan.next();
             scan2 = new Scanner(line);
-            scan2.useDelimiter("[:AMPM]+");
+            scan2.useDelimiter("[:AMP]+");
             listOfTimes[i] = (line.endsWith("PM") && !line.startsWith("12"))
                     ? (Integer.parseInt(scan2.next()) + 12) * 100 + Integer.parseInt(scan2.next())
                     : Integer.parseInt(scan2.next()) * 100 + Integer.parseInt(scan2.next());
@@ -365,26 +365,14 @@ public class App {
      */
     public static int[] convertToDay(int[] times, String day) {
         int[] output = new int[times.length];
-        int change;
-        switch (day) {
-            case "M":
-                change = 10000;
-                break;
-            case "Tu":
-                change = 20000;
-                break;
-            case "W":
-                change = 30000;
-                break;
-            case "Th":
-                change = 40000;
-                break;
-            case "F":
-                change = 50000;
-                break;
-            default:
-                change = 0;
-        }
+        int change = switch (day) {
+            case "M" -> 10000;
+            case "Tu" -> 20000;
+            case "W" -> 30000;
+            case "Th" -> 40000;
+            case "F" -> 50000;
+            default -> 0;
+        };
         for (int i = 0; i < output.length; i++) {
             output[i] = times[i] + change;
         }

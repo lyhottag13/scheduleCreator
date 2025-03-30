@@ -30,7 +30,7 @@ public class Scraper {
      * Returns the valid schedules for the user's inputs. This is different from the
      * App.java
      * class, instead working specifically based on the GUI's specifications.
-     * 
+     *
      * @param numberOfClasses      the number of classes in the user's input.
      * @param timeConstraintsInput the time constraints as an array.
      * @param campus               the desired campus; either Pecos or Pecos &
@@ -40,7 +40,7 @@ public class Scraper {
      * @param classNames           the names of all the desired courses.
      * @return
      */
-    public static String scrapeValidSchedules(int numberOfClasses, int[] timeConstraintsInput, int campus,
+    public static String scrapeValidSchedules(int numberOfClasses, int[] timeConstraintsInput,
             int courseYear,
             int courseSemester, String[] classNames) {
         validSchedules = new ArrayList<>();
