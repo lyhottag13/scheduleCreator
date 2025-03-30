@@ -10,7 +10,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class App {
-    public static int totalPossibleSchedules = 0;
+    private static int totalPossibleSchedules = 0;
     private static ArrayList<Course>[] classSchedules;
     private static Scanner scan;
     private static String[] classNames;
@@ -51,19 +51,7 @@ public class App {
                 e.printStackTrace();
             }
 
-            System.out.println("\n============ POSSIBLE SCHEDULES ============");
-            if (validSchedules.size() == 0) {
-                System.out.println("No possible combinations, sorry! Retry with different limits.");
-                for (int i = 0; i < numberOfClasses; i++) {
-                    if (classSchedules[i].get(classSchedules[i].size() - 1).isOnline()) {
-                        System.out.println(classSchedules[i].get(0).name() + " is avaliable online!");
-                    }
-                }
-            } else {
-                for (int i = 0; i < validSchedules.size(); i++) {
-                    System.out.println("Schedule " + (i + 1) + ":\n" + validSchedules.get(i));
-                }
-            }
+            printValidSchedules();
             System.out.println("Based on your time filters, I displayed " + validSchedules.size() + " of "
                     + totalPossibleSchedules + " possible schedules.");
             System.out.println("Would you like to try again? Y/N");
@@ -297,6 +285,21 @@ public class App {
         }
     }
 
+    public static void printValidSchedules() {
+        System.out.println("\n============ POSSIBLE SCHEDULES ============");
+        if (validSchedules.size() == 0) {
+            System.out.println("No possible combinations, sorry! Retry with different limits.");
+            for (int i = 0; i < numberOfClasses; i++) {
+                if (classSchedules[i].get(classSchedules[i].size() - 1).isOnline()) {
+                    System.out.println(classSchedules[i].get(0).name() + " is avaliable online!");
+                }
+            }
+        } else {
+            for (int i = 0; i < validSchedules.size(); i++) {
+                System.out.println("Schedule " + (i + 1) + ":\n" + validSchedules.get(i));
+            }
+        }
+    }
     /**
      * Converts the time to military standard to make them easier to compare with
      * other classes and determine class compatibility.
@@ -387,4 +390,5 @@ public class App {
         }
         return output;
     }
+
 }

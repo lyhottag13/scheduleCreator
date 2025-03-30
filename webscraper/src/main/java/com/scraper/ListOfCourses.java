@@ -46,11 +46,11 @@ public class ListOfCourses<E> extends LinkedList<Course> {
         }
         for (Course c : list) {
             if (!isWithinTimeConstraints(c, constraints)) {
-                App.totalPossibleSchedules++;
+                Scraper.totalPossibleSchedules++;
                 return false;
             }
         }
-        App.totalPossibleSchedules++;
+        Scraper.totalPossibleSchedules++;
         return true;
     }
 
