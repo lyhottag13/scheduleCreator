@@ -52,7 +52,6 @@ public class Scraper {
                     + "&institutions%5B%5D=CGC08&subject_code=&credit_career=B&credits_min=gte0&credits_max=lte9&start_hour=&end_hour=&startafter=&instructors=";
             try {
                 classSchedules[i] = scrape(url2);
-                System.out.println(classSchedules[i]);
             } catch (Exception e) {
                 System.out.println("INVALID SCRAPE");
                 e.printStackTrace();

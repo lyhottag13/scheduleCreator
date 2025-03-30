@@ -135,20 +135,24 @@ public class AppGUI implements ActionListener, ChangeListener {
             }
         }
 
-        tryAgainButton = new JButton("Try Again?");
-        tryAgainButton.addActionListener(this);
-
-        results = new JTextPane();
-        results.setEditable(false);
-        scrollPane = new JScrollPane();
-        scrollPane.setViewportView(results);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setPreferredSize(new Dimension(500, 500));
-        backgroundPanel2 = new JPanel(new BorderLayout());
-        backgroundPanel2.add(new JLabel("Possible Schedules"));
-        backgroundPanel2.add(scrollPane);
-        backgroundPanel2.add(tryAgainButton, BorderLayout.SOUTH);
+        // Screen 2, the one that shows the results.
+        {
+            tryAgainButton = new JButton("Try Again?");
+            tryAgainButton.addActionListener(this);
+    
+            results = new JTextPane();
+            results.setEditable(false);
+            scrollPane = new JScrollPane();
+            scrollPane.setViewportView(results);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setPreferredSize(new Dimension(500, 500));
+            backgroundPanel2 = new JPanel(new BorderLayout());
+            backgroundPanel2.add(new JLabel("Possible Schedules"));
+            backgroundPanel2.add(scrollPane);
+            backgroundPanel2.add(tryAgainButton, BorderLayout.SOUTH);
+    
+        }
 
         settingsPanel.setPreferredSize(new Dimension(800, 350));
         backgroundPanel.add(settingsPanel, BorderLayout.NORTH);
