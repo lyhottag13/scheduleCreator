@@ -25,3 +25,7 @@ replay_pid*
 
 # Other Stuff #
 test.java
+.vscode/
+.mvn/
+.idea/
+.mvn/
