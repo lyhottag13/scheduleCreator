@@ -41,8 +41,8 @@ public class Scraper {
      * @return
      */
     public static String scrapeValidSchedules(int numberOfClasses, int[] timeConstraintsInput,
-            int courseYear,
-            int courseSemester, String[] classNames) {
+                                              int courseYear,
+                                              int courseSemester, String[] classNames) {
         validSchedules = new ArrayList<>();
         classSchedules = new ArrayList[numberOfClasses];
         timeConstraints = timeConstraintsInput;
@@ -62,7 +62,7 @@ public class Scraper {
     }
 
     public static ArrayList<Course> scrape(String url) throws IOException {
-        ArrayList<Course> arrayList = new ArrayList<Course>();
+        ArrayList<Course> arrayList = new ArrayList<>();
         Document document = Jsoup.connect(url).get();
         Elements classContent = document.select(".course");
         for (Element content : classContent) {
@@ -98,23 +98,23 @@ public class Scraper {
     /**
      * Converts the valid schedules into an easily readable format. Also, if certain
      * courses are online, the user is notified of that.
-     * 
+     *
      * @param numberOfClasses the number of classes.
      * @return an easily digestible format for the possible schedules.
      */
     public static String convertValidSchedules(int numberOfClasses) {
         StringBuilder output = new StringBuilder();
         output.append("\n============ POSSIBLE SCHEDULES ============\n");
-        if (validSchedules.size() == 0) {
+        if (validSchedules.isEmpty()) {
             output.append("No possible combinations, sorry! Retry with different limits.\n");
             for (int i = 0; i < numberOfClasses; i++) {
-                if (classSchedules[i].get(classSchedules[i].size() - 1).isOnline()) {
-                    output.append(classSchedules[i].get(0).name() + " is avaliable online!\n");
+                if (classSchedules[i].getLast().isOnline()) {
+                    output.append(classSchedules[i].getFirst().name()).append(" is available online!\n");
                 }
             }
         } else {
             for (int i = 0; i < validSchedules.size(); i++) {
-                output.append("Schedule " + (i + 1) + ":\n" + validSchedules.get(i) + "\n");
+                output.append("Schedule ").append(i + 1).append(":\n").append(validSchedules.get(i)).append("\n");
             }
         }
         return output.toString();
@@ -122,7 +122,7 @@ public class Scraper {
 
     /**
      * Checks if the Williams campus is allowed in the search.
-     * 
+     *
      * @param checker a {@code String} containing the declaration of this timeslot's
      *                location.
      * @return whether or not the Williams campus is allowed.
@@ -137,7 +137,7 @@ public class Scraper {
     /**
      * Calls the other parseCombinations method, but prevents the temporary
      * listOfCourses from existing outside the scope of this method.
-     * 
+     *
      * @param numberOfLevels the number of levels the parser will need to iterate
      *                       through.
      */
@@ -150,7 +150,7 @@ public class Scraper {
      * Parses all the in-person combinations possible and, if it finds a valid
      * schedule, then
      * adds it to the list of valid schedules.
-     * 
+     *
      * @param listOfCourses a list of courses.
      * @param level         the level at which we are currently on. This number
      *                      decreases per loop, until we reach the final level.
@@ -172,13 +172,13 @@ public class Scraper {
     /**
      * Converts the time to military standard to make them easier to compare with
      * other classes and determine class compatibility.
-     * 
+     *
      * @param timeString the {@code String} representation of the times the class
      *                   will meet.
      * @return an {@code int[]} array of the start and end times.
      */
     public static int[] convertToMilitaryTime(String timeString) {
-        int[] listOfTimes = new int[] { 0, 0 };
+        int[] listOfTimes = new int[]{0, 0};
         if (timeString.charAt(0) == 'N') {
             return listOfTimes;
         }
@@ -205,7 +205,7 @@ public class Scraper {
     /**
      * Converts each time in the matrix to a time that matches its day to make the
      * later comparisons simpler.
-     * 
+     *
      * @param list the complete list of times.
      * @param days a string representation of the days, such as M,W.
      * @return a converted int matrix with all the times converted.
@@ -227,7 +227,7 @@ public class Scraper {
      * (representing 8:00 AM) will now display 10800. If it was Tuesday, then 20800.
      * Wednesday, 30800, and so on. This makes it easier for the program to perform
      * compatibility checks later.
-     * 
+     *
      * @param times a list of the start and end times.
      * @param day   a {@code String} representation of the day that this timeslot
      *              takes place

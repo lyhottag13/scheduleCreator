@@ -248,7 +248,7 @@ public class AppGUI implements ActionListener, ChangeListener {
         Scraper.totalPossibleSchedules = 0;
         try {
             results.setText(
-                    Scraper.scrapeValidSchedules(readCourseNumber(), readTimeConstraints(), readCampus(), readYear(), readCourseNames()) + "\nBased on your filters, I displayed "
+                    Scraper.scrapeValidSchedules(readCourseNumber(), readTimeConstraints(), readYear(), readSemester(), readCourseNames()) + "\nBased on your filters, I displayed "
                             + Scraper.getValidSchedules().size() + " of " + Scraper.totalPossibleSchedules
                             + " possible schedules.\n\n\n");
         } catch (Exception e) {
@@ -276,8 +276,8 @@ public class AppGUI implements ActionListener, ChangeListener {
         return listModel.size();
     }
 
-    private int readCampus() {
-        return Scraper.getCampus();
+    private int readSemester() {
+        return Scraper.getSemester();
     }
 
     private int[] readTimeConstraints() throws Exception {
@@ -296,10 +296,6 @@ public class AppGUI implements ActionListener, ChangeListener {
             courseNames[i] = listModel.get(i);
         }
         return courseNames;
-    }
-
-    private int readSemester() {
-        return Scraper.getSemester();
     }
 
     private int readYear() throws Exception {
