@@ -1,0 +1,123 @@
+package com.scraper;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+
+public class AppController {
+    AppView view;
+    AppModel model;
+
+    public AppController(AppView view, AppModel model) {
+        this.view = view;
+        this.model = model;
+        initialize();
+    }
+
+    public void initialize() {
+        view.setAddButtonListener(e -> handleAddButton());
+        view.setEditButtonListener(e -> handleEditButton());
+        view.setRemoveButtonListener(e -> handleRemoveButton());
+        view.setTryAgainButtonListener(e -> toggleScreen());
+        view.setTimeSliderListener(e -> handleTimeSlider());
+        view.setTimeSlider2Listener(e -> handleTimeSlider2());
+        view.setCreateButtonListener(e -> {
+            if (setResultsText()) {
+                toggleScreen();
+            }
+        });
+        view.setFallButtonListener(e -> AppModel.setSemester("fall"));
+        view.setSpringButtonListener(e -> AppModel.setSemester("spring"));
+        view.setSummerButtonListener(e -> AppModel.setSemester("summer"));
+        view.setPecosButtonListener(e -> AppModel.setCampus("pecos"));
+        view.setPecosAndWilliamsButtonListener(e -> AppModel.setCampus("pecosAndWilliams"));
+        view.setIdentificationInputKeyAdapter(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (view.getIdentificationInput().getText().length() >= 3) {
+                    e.consume();
+                }
+            }
+        });
+        try {
+            model.fillComboBox(view.getComboBoxModel());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleTimeSlider2() {
+        if (view.getTimeSlider2().getValue() < view.getTimeSlider().getValue()) {
+            view.getTimeSlider().setValue(view.getTimeSlider2().getValue() - 1);
+        }
+    }
+
+    private void handleTimeSlider() {
+        if (view.getTimeSlider().getValue() > view.getTimeSlider2().getValue()) {
+            view.getTimeSlider2().setValue(view.getTimeSlider().getValue() + 1);
+        }
+    }
+
+    private void handleEditButton() {
+        if (view.getClassList().isSelectionEmpty()) {
+            JOptionPane.showMessageDialog(null, "Select an item", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        String className = JOptionPane.showInputDialog(null, "What would you like to change this class to?");
+        JOptionPane.showConfirmDialog(null, view.getChoicePanel(), "What would you like to change this class to!", JOptionPane.OK_CANCEL_OPTION);
+        if (className.isEmpty()) {
+            view.getListModel().remove(view.getClassList().getSelectedIndex());
+        } else if (!model.isValidName(className)) {
+            JOptionPane.showMessageDialog(null, "Enter a valid name", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            view.getListModel().set(view.getClassList().getSelectedIndex(), className);
+        }
+    }
+
+    private void handleAddButton() {
+        view.getIdentificationInput().setText("");
+        view.getComboBox().setSelectedIndex(0);
+        if (JOptionPane.showConfirmDialog(null, view.getChoicePanel(), "Add a class!", JOptionPane.OK_CANCEL_OPTION) == 0) {
+            String className = view.getComboBox().getSelectedItem() + view.getIdentificationInput().getText();
+            System.out.println(className);
+            if (model.isValidName(className)) {
+                view.getListModel().add(0, className.toUpperCase());
+            } else {
+                JOptionPane.showMessageDialog(null, "Enter a valid name", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void handleRemoveButton() {
+        try {
+            view.getListModel().remove(view.getClassList().getSelectedIndex());
+        } catch (Exception exc) {
+            JOptionPane.showMessageDialog(null, "Select an item", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Sets the text of the results page to the schedules it scraped if it succeeds.
+     *
+     * @return a {@code boolean} that states whether the operation was successful.
+     */
+    private boolean setResultsText() {
+        AppModel.totalPossibleSchedules = 0;
+        try {
+            view.getResults().setText(
+                    AppModel.createValidScheduleString(view.getNumberOfCourses(), view.getTimeConstraints(), view.getYear(), view.getSemesterButtonGroup(), view.getCourseNames()) + "\nBased on your filters, I displayed "
+                            + AppModel.getValidSchedules().size() + " of " + AppModel.totalPossibleSchedules
+                            + " possible schedules.\n\n\n");
+            return true;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private void toggleScreen() {
+        ((CardLayout) view.getMainPanel().getLayout()).next(view.getMainPanel());
+    }
+}

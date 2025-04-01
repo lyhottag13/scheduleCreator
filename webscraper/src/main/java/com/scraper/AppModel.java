@@ -9,7 +9,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class Scraper {
+import javax.swing.*;
+
+public class AppModel {
     enum Constants {
         PECOS,
         WILLIAMS,
@@ -26,35 +28,21 @@ public class Scraper {
     public static int totalPossibleSchedules = 0;
 
     @SuppressWarnings("unchecked")
-    /**
-     * Returns the valid schedules for the user's inputs. This is different from the
-     * App.java
-     * class, instead working specifically based on the GUI's specifications.
-     *
-     * @param numberOfClasses      the number of classes in the user's input.
-     * @param timeConstraintsInput the time constraints as an array.
-     * @param campus               the desired campus; either Pecos or Pecos &
-     *                             Williams
-     * @param courseYear           the desired year.
-     * @param courseSemester       the desired semester.
-     * @param classNames           the names of all the desired courses.
-     * @return
-     */
-    public static String scrapeValidSchedules(int numberOfClasses, int[] timeConstraintsInput,
-                                              int courseYear,
-                                              int courseSemester, String[] classNames) {
+
+
+    public static String createValidScheduleString(int numberOfClasses, int[] timeConstraintsInput,
+                                                   int courseYear,
+                                                   int courseSemester, String[] classNames) throws Exception {
         validSchedules = new ArrayList<>();
         classSchedules = new ArrayList[numberOfClasses];
         timeConstraints = timeConstraintsInput;
         for (int i = 0; i < numberOfClasses; i++) {
             String url2 = "https://classes.sis.maricopa.edu/?keywords=" + classNames[i].toLowerCase()
-                    + "&all_classes=false&terms%5B%5D=" + (4250 + (courseYear - 2024) * 6 + courseSemester)
+                    + "&all_classes=false&terms%5B%5D=" + (4252 + (courseYear - 2025) * 6 + courseSemester * 2)
                     + "&institutions%5B%5D=CGC08&subject_code=&credit_career=B&credits_min=gte0&credits_max=lte9&start_hour=&end_hour=&startafter=&instructors=";
-            try {
-                classSchedules[i] = scrape(url2);
-            } catch (Exception e) {
-                System.out.println("INVALID SCRAPE");
-                e.printStackTrace();
+            classSchedules[i] = scrape(url2);
+            if (classSchedules[i].isEmpty()) {
+                throw new Exception("One or more classes input are invalid or return 0 results.");
             }
         }
         parseCombinations(numberOfClasses - 1);
@@ -71,6 +59,12 @@ public class Scraper {
         return arrayList;
     }
 
+    /**
+     * Creates a list of courses based on a table on the Find A Class website.
+     *
+     * @param content the content of a single class ID.
+     * @param list    a list of courses.
+     */
     public static void createCourseList(Element content, ArrayList<Course> list) {
         Elements classRows = content.select("table tbody tr.class-specs*");
         for (Element row : classRows) {
@@ -106,10 +100,10 @@ public class Scraper {
         StringBuilder output = new StringBuilder();
         output.append("\n============ POSSIBLE SCHEDULES ============\n");
         if (validSchedules.isEmpty()) {
-            output.append("No possible combinations, sorry! Retry with different limits.\n");
+            output.append("No possible combinations, sorry!\n");
             for (int i = 0; i < numberOfClasses; i++) {
                 if (classSchedules[i].getLast().isOnline()) {
-                    output.append(classSchedules[i].getFirst().name()).append(" is available online!\n");
+                    output.append(classSchedules[i].getFirst().name()).append(" is available online! Retry the schedule creator without this class.\n");
                 }
             }
         } else {
@@ -125,7 +119,7 @@ public class Scraper {
      *
      * @param checker a {@code String} containing the declaration of this timeslot's
      *                location.
-     * @return whether or not the Williams campus is allowed.
+     * @return whether the Williams campus is allowed.
      */
     private static boolean williamsAllowed(String checker) {
         if (campusSelection == Constants.WILLIAMS) {
@@ -142,14 +136,13 @@ public class Scraper {
      *                       through.
      */
     public static void parseCombinations(int numberOfLevels) {
-        ListOfCourses<Course> listOfCourses = new ListOfCourses<Course>();
+        ListOfCourses<Course> listOfCourses = new ListOfCourses<>();
         parseCombinations(listOfCourses, numberOfLevels);
     }
 
     /**
      * Parses all the in-person combinations possible and, if it finds a valid
-     * schedule, then
-     * adds it to the list of valid schedules.
+     * schedule, then adds it to the list of valid schedules.
      *
      * @param listOfCourses a list of courses.
      * @param level         the level at which we are currently on. This number
@@ -159,14 +152,70 @@ public class Scraper {
         for (int i = 0; i < classSchedules[level].size(); i++) {
             listOfCourses.add(classSchedules[level].get(i));
             if (!ListOfCourses.containsOnlineCourse(listOfCourses)) {
-                if (level == 0 && ListOfCourses.isValidList(listOfCourses, timeConstraints)) {
-                    validSchedules.add(new ListOfCourses<Course>(listOfCourses));
+                if (level == 0 && isValidList(listOfCourses, timeConstraints)) {
+                    validSchedules.add(new ListOfCourses<>(listOfCourses));
                 } else if (level != 0) {
                     parseCombinations(listOfCourses, level - 1);
                 }
             }
             listOfCourses.removeLast();
         }
+    }
+
+    private static boolean isValidList(ListOfCourses<Course> list, int[] constraints) {
+        Course course;
+        for (int i = 1; i < list.size(); i++) {
+            course = list.get(i);
+            for (int j = 0; j < i; j++) {
+                if (!isCompatible(course, list.get(j))) {
+                    return false;
+                }
+            }
+        }
+        for (Course c : list) {
+            if (!isWithinTimeConstraints(c, constraints)) {
+                AppModel.totalPossibleSchedules++;
+                return false;
+            }
+        }
+        AppModel.totalPossibleSchedules++;
+        return true;
+    }
+
+    /**
+     * Checks to see if the timeslot is within the time constraints.
+     *
+     * @param course      a course's timeslot.
+     * @param constraints the time constraints set by the user.
+     * @return a {@code boolean} stating whether this course's timeslots were within
+     * the time constraints.
+     */
+    private static boolean isWithinTimeConstraints(Course course, int[] constraints) {
+        int courseStartTime = course.times()[0][0] % 10000;
+        int courseEndTime = course.times()[0][1] % 10000;
+        return (courseStartTime >= constraints[0] && courseEndTime <= constraints[1]);
+    }
+
+    private static boolean isCompatible(Course course1, Course course2) {
+        int[][] times1 = course1.times();
+        int[][] times2 = course2.times();
+        for (int[] row1 : times1) {
+            for (int i1 : row1) {
+                for (int[] row2 : times2) {
+                    if (i1 > row2[0] && i1 < row2[1])
+                        return false;
+                }
+            }
+        }
+        for (int[] row2 : times2) {
+            for (int i2 : row2) {
+                for (int[] row1 : times1) {
+                    if (i2 > row1[0] && i2 < row1[1])
+                        return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -189,7 +238,7 @@ public class Scraper {
         for (int i = 0; i < 2; i++) {
             line = scan.next();
             scan2 = new Scanner(line);
-            scan2.useDelimiter("[:AMPM]+");
+            scan2.useDelimiter("[:AMP]+");
             listOfTimes[i] = (line.endsWith("PM") && !line.startsWith("12"))
                     ? (Integer.parseInt(scan2.next()) + 12) * 100 + Integer.parseInt(scan2.next())
                     : Integer.parseInt(scan2.next()) * 100 + Integer.parseInt(scan2.next());
@@ -236,26 +285,14 @@ public class Scraper {
      */
     public static int[] convertToDay(int[] times, String day) {
         int[] output = new int[times.length];
-        int change;
-        switch (day) {
-            case "M":
-                change = 10000;
-                break;
-            case "Tu":
-                change = 20000;
-                break;
-            case "W":
-                change = 30000;
-                break;
-            case "Th":
-                change = 40000;
-                break;
-            case "F":
-                change = 50000;
-                break;
-            default:
-                change = 0;
-        }
+        int change = switch (day) {
+            case "M" -> 10000;
+            case "Tu" -> 20000;
+            case "W" -> 30000;
+            case "Th" -> 40000;
+            case "F" -> 50000;
+            default -> 0;
+        };
         for (int i = 0; i < output.length; i++) {
             output[i] = times[i] + change;
         }
@@ -277,16 +314,11 @@ public class Scraper {
     }
 
     public static int getSemester() {
-        switch (semesterSelection) {
-            case Constants.FALL:
-                return 0;
-            case Constants.SPRING:
-                return 1;
-            case Constants.SUMMER:
-                return 2;
-            default:
-                return 0;
-        }
+        return switch (semesterSelection) {
+            case Constants.SUMMER -> 1;
+            case Constants.FALL -> 2;
+            default -> 0;
+        };
     }
 
     public static void setCampus(String campus) {
@@ -294,16 +326,39 @@ public class Scraper {
             case "pecos":
                 campusSelection = Constants.PECOS;
                 break;
-            case "williams":
+            case "pecosAndWilliams":
                 campusSelection = Constants.WILLIAMS;
         }
     }
 
-    public static int getCampus() {
-        return 1;
-    }
-
     public static ArrayList<ListOfCourses<Course>> getValidSchedules() {
         return validSchedules;
+    }
+
+    public boolean isValidName(String className) {
+        if (className.length() != 6) {
+            return false;
+        }
+        char[] letters = className.toCharArray();
+        for (int i = 0; i < 3; i++) {
+            if (!Character.isLetter(letters[i])) {
+                return false;
+            }
+        }
+        for (int i = 3; i < 6; i++) {
+            if (!Character.isDigit(letters[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void fillComboBox(DefaultComboBoxModel<String> boxModel) throws IOException {
+        Document document = Jsoup.connect("https://catalog.cgc.edu/course-search/").get();
+        Elements subjectList = document.select(".form-group select#crit-subject option");
+        for (Element subjectName : subjectList) {
+            boxModel.addElement(subjectName.text().substring(0, 3));
+        }
+        boxModel.removeElementAt(0);
     }
 }
