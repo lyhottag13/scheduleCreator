@@ -1,8 +1,8 @@
 com\scraper\Course.class
-com\scraper\Main$1.class
-com\scraper\Scraper.class
+com\scraper\AppModel$Constants.class
+com\scraper\AppModel.class
 com\scraper\Main.class
-com\scraper\App.class
-com\scraper\AppGUI.class
+com\scraper\AppController.class
+com\scraper\AppView.class
+com\scraper\AppController$1.class
 com\scraper\ListOfCourses.class
-com\scraper\Scraper$Constants.class

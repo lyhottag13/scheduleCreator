@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 
 public class AppController {
     AppView view;
@@ -16,6 +17,11 @@ public class AppController {
     }
 
     public void initialize() {
+        try {
+        model.fillComboBox(view.getComboBoxModel());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         view.setAddButtonListener(e -> handleAddButton());
         view.setEditButtonListener(e -> handleEditButton());
         view.setRemoveButtonListener(e -> handleRemoveButton());
@@ -40,11 +46,6 @@ public class AppController {
                 }
             }
         });
-        try {
-            model.fillComboBox(view.getComboBoxModel());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private void handleTimeSlider2() {

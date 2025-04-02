@@ -2,6 +2,7 @@ package com.scraper;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import org.jsoup.Jsoup;
@@ -74,16 +75,13 @@ public class AppModel {
                 boolean isOnline = row.select(".class-delivery div").text().contains("Online");
                 String stringOfDays = row.select(".class-days").text().trim();
                 int numberOfDays = 1;
+                String times = row.select(".class-times div").text();
                 for (int i = 0; i < stringOfDays.length(); i++) {
                     if (stringOfDays.charAt(i) == ',') {
                         numberOfDays++;
                     }
                 }
-                String[] times1 = new String[numberOfDays];
-                for (int i = 0; i < numberOfDays; i++) {
-                    times1[i] = row.select(".class-times div").text();
-                }
-                int[][] times2 = convertAllTimes(times1, stringOfDays);
+                int[][] times2 = convertAllTimes1(times, stringOfDays, numberOfDays);
                 list.add(new Course(content.select("h3").text().trim().substring(0, 6), ID, isOnline, times2));
             }
         }
@@ -269,6 +267,18 @@ public class AppModel {
         scan.close();
         return output;
     }
+    public static int[][] convertAllTimes1(String times, String days, int numberOfDays) {
+        String[] list = new String[numberOfDays];
+        Scanner scan = new Scanner(days);
+        scan.useDelimiter(",");
+        Arrays.fill(list, times);
+        int[][] output = new int[list.length][1];
+        for (int i = 0; i < output.length; i++) {
+            output[i] = convertToDay(convertToMilitaryTime(list[i]), scan.next());
+        }
+        scan.close();
+        return output;
+    }
 
     /**
      * Converts each military time to a time that includes a representation of the
@@ -354,8 +364,8 @@ public class AppModel {
     }
 
     public void fillComboBox(DefaultComboBoxModel<String> boxModel) throws IOException {
-        Document document = Jsoup.connect("https://catalog.cgc.edu/course-search/").get();
-        Elements subjectList = document.select(".form-group select#crit-subject option");
+        Document document = Jsoup.connect("https://classes.sis.maricopa.edu/").userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36").get();
+        Elements subjectList = document.select("select#subject_code option");
         for (Element subjectName : subjectList) {
             boxModel.addElement(subjectName.text().substring(0, 3));
         }
