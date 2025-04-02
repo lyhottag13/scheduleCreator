@@ -34,6 +34,8 @@ public class AppModel {
     public static String createValidScheduleString(int numberOfClasses, int[] timeConstraintsInput,
                                                    int courseYear,
                                                    int courseSemester, String[] classNames) throws Exception {
+        boolean invalidScrape = false;
+        StringBuilder invalidClasses = new StringBuilder();
         validSchedules = new ArrayList<>();
         classSchedules = new ArrayList[numberOfClasses];
         timeConstraints = timeConstraintsInput;
@@ -43,8 +45,12 @@ public class AppModel {
                     + "&institutions%5B%5D=CGC08&subject_code=&credit_career=B&credits_min=gte0&credits_max=lte9&start_hour=&end_hour=&startafter=&instructors=";
             classSchedules[i] = scrape(url2);
             if (classSchedules[i].isEmpty()) {
-                throw new Exception("One or more classes input are invalid or return 0 results.");
+                invalidScrape = true;
+                invalidClasses.append("    ").append(classNames[i]).append("\n");
             }
+        }
+        if (invalidScrape) {
+            throw new Exception("The following classes were invalid." + "\n" + invalidClasses);
         }
         parseCombinations(numberOfClasses - 1);
         return convertValidSchedules(numberOfClasses);
@@ -185,7 +191,7 @@ public class AppModel {
     private static boolean isWithinTimeConstraints(Course course, int[] constraints) {
         int courseStartTime = convertAllTimes(course.times(), course.days())[0][0] % 10000;
         int courseEndTime = convertAllTimes(course.times(), course.days())[0][1] % 10000;
-        return (courseStartTime >= constraints[0] && courseEndTime <= constraints[1]);
+        return courseStartTime >= constraints[0] && courseEndTime <= constraints[1];
     }
 
     private static boolean isCompatible(Course course1, Course course2) {

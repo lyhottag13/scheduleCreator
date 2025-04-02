@@ -113,7 +113,6 @@ public class AppController {
             return true;
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
         }
         return false;
     }
