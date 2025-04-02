@@ -81,8 +81,8 @@ public class AppModel {
                         numberOfDays++;
                     }
                 }
-                int[][] times2 = convertAllTimes1(times, stringOfDays, numberOfDays);
-                list.add(new Course(content.select("h3").text().trim().substring(0, 6), ID, isOnline, times2));
+//                int[][] times2 = convertAllTimes1(times, stringOfDays, numberOfDays);
+                list.add(new Course(content.select("h3").text().trim().substring(0, 6), ID, isOnline, times, stringOfDays));
             }
         }
     }
@@ -189,14 +189,14 @@ public class AppModel {
      * the time constraints.
      */
     private static boolean isWithinTimeConstraints(Course course, int[] constraints) {
-        int courseStartTime = course.times()[0][0] % 10000;
-        int courseEndTime = course.times()[0][1] % 10000;
+        int courseStartTime = convertAllTimes1(course.times(), course.days())[0][0] % 10000;
+        int courseEndTime = convertAllTimes1(course.times(), course.days())[0][1] % 10000;
         return (courseStartTime >= constraints[0] && courseEndTime <= constraints[1]);
     }
 
     private static boolean isCompatible(Course course1, Course course2) {
-        int[][] times1 = course1.times();
-        int[][] times2 = course2.times();
+        int[][] times1 = convertAllTimes1(course1.times(), course1.days());
+        int[][] times2 = convertAllTimes1(course2.times(), course2.days());
         for (int[] row1 : times1) {
             for (int i1 : row1) {
                 for (int[] row2 : times2) {
@@ -267,7 +267,13 @@ public class AppModel {
         scan.close();
         return output;
     }
-    public static int[][] convertAllTimes1(String times, String days, int numberOfDays) {
+    public static int[][] convertAllTimes1(String times, String days) {
+        int numberOfDays = 1;
+        for (int i = 0; i < days.length(); i++) {
+            if (days.charAt(i) == ',') {
+                numberOfDays++;
+            }
+        }
         String[] list = new String[numberOfDays];
         Scanner scan = new Scanner(days);
         scan.useDelimiter(",");

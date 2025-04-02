@@ -48,37 +48,7 @@ public class AppController {
         });
     }
 
-    private void handleTimeSlider2() {
-        if (view.getTimeSlider2().getValue() < view.getTimeSlider().getValue()) {
-            view.getTimeSlider().setValue(view.getTimeSlider2().getValue() - 1);
-        }
-    }
-
-    private void handleTimeSlider() {
-        if (view.getTimeSlider().getValue() > view.getTimeSlider2().getValue()) {
-            view.getTimeSlider2().setValue(view.getTimeSlider().getValue() + 1);
-        }
-    }
-
-    private void handleEditButton() {
-        if (view.getClassList().isSelectionEmpty()) {
-            JOptionPane.showMessageDialog(null, "Select an item", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        String className = JOptionPane.showInputDialog(null, "What would you like to change this class to?");
-        JOptionPane.showConfirmDialog(null, view.getChoicePanel(), "What would you like to change this class to!", JOptionPane.OK_CANCEL_OPTION);
-        if (className.isEmpty()) {
-            view.getListModel().remove(view.getClassList().getSelectedIndex());
-        } else if (!model.isValidName(className)) {
-            JOptionPane.showMessageDialog(null, "Enter a valid name", "Error", JOptionPane.ERROR_MESSAGE);
-        } else {
-            view.getListModel().set(view.getClassList().getSelectedIndex(), className);
-        }
-    }
-
     private void handleAddButton() {
-        view.getIdentificationInput().setText("");
-        view.getComboBox().setSelectedIndex(0);
         if (JOptionPane.showConfirmDialog(null, view.getChoicePanel(), "Add a class!", JOptionPane.OK_CANCEL_OPTION) == 0) {
             String className = view.getComboBox().getSelectedItem() + view.getIdentificationInput().getText();
             System.out.println(className);
@@ -88,6 +58,24 @@ public class AppController {
                 JOptionPane.showMessageDialog(null, "Enter a valid name", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
+        view.getIdentificationInput().setText("");
+        view.getComboBox().setSelectedIndex(0);
+    }
+
+    private void handleEditButton() {
+        if (view.getClassList().isSelectionEmpty()) {
+            JOptionPane.showMessageDialog(null, "Select an item", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        JOptionPane.showConfirmDialog(null, view.getChoicePanel(), "What would you like to change this class to?", JOptionPane.OK_CANCEL_OPTION);
+        String userInput = view.getComboBoxModel().getElementAt(view.getComboBox().getSelectedIndex()) + view.getIdentificationInput().getText();
+        if (!model.isValidName(userInput)) {
+            JOptionPane.showMessageDialog(null, "Enter a valid name", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            view.getListModel().set(view.getClassList().getSelectedIndex(), userInput);
+        }
+        view.getComboBox().setSelectedIndex(0);
+        view.getIdentificationInput().setText("");
     }
 
     private void handleRemoveButton() {
@@ -95,6 +83,18 @@ public class AppController {
             view.getListModel().remove(view.getClassList().getSelectedIndex());
         } catch (Exception exc) {
             JOptionPane.showMessageDialog(null, "Select an item", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void handleTimeSlider2() {
+        if (view.getTimeSlider2().getValue() < view.getTimeSlider().getValue()) {
+            view.getTimeSlider().setValue(view.getTimeSlider2().getValue() - 1);
+        }
+    }
+
+    private void handleTimeSlider() {
+        if (view.getTimeSlider().getValue() > view.getTimeSlider2().getValue()) {
+            view.getTimeSlider2().setValue(view.getTimeSlider().getValue() + 1);
         }
     }
 
