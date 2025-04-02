@@ -364,7 +364,7 @@ public class AppModel {
         Document document = Jsoup.connect("https://classes.sis.maricopa.edu/").userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36").get();
         Elements subjectList = document.select("select#subject_code option");
         for (Element subjectName : subjectList) {
-            boxModel.addElement(subjectName.text().substring(0, 3));
+            boxModel.addElement(subjectName.text());
         }
         boxModel.removeElementAt(0);
     }

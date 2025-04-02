@@ -18,7 +18,7 @@ public class AppController {
 
     public void initialize() {
         try {
-        model.fillComboBox(view.getComboBoxModel());
+            model.fillComboBox(view.getComboBoxModel());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -50,8 +50,7 @@ public class AppController {
 
     private void handleAddButton() {
         if (JOptionPane.showConfirmDialog(null, view.getChoicePanel(), "Add a class!", JOptionPane.OK_CANCEL_OPTION) == 0) {
-            String className = view.getComboBox().getSelectedItem() + view.getIdentificationInput().getText();
-            System.out.println(className);
+            String className = view.getComboBoxModel().getElementAt(view.getComboBox().getSelectedIndex()).substring(0, 3) + view.getIdentificationInput().getText();
             if (model.isValidName(className)) {
                 view.getListModel().add(0, className.toUpperCase());
             } else {
@@ -79,10 +78,14 @@ public class AppController {
     }
 
     private void handleRemoveButton() {
-        try {
-            view.getListModel().remove(view.getClassList().getSelectedIndex());
-        } catch (Exception exc) {
-            JOptionPane.showMessageDialog(null, "Select an item", "Error", JOptionPane.ERROR_MESSAGE);
+        if (view.getListModel().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Enter more items.", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            if (view.getClassList().isSelectionEmpty()) {
+                view.getListModel().remove(0);
+            } else {
+                view.getListModel().remove(view.getClassList().getSelectedIndex());
+            }
         }
     }
 

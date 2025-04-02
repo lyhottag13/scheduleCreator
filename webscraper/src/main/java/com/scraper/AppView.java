@@ -40,8 +40,6 @@ public class AppView {
         backgroundPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
         settingsPanel = new JPanel(new GridLayout((int) Math.ceil(NUMBER_OF_SETTINGS / 2.0), 2, 50, 10));
         settingsPanel.setBorder(new TitledBorder("Settings"));
-        listModel = new DefaultListModel<>();
-        classList = new JList<>(listModel);
         final int EARLIEST_TIME = 6;
         final int LATEST_TIME = 22;
         timeSlider = new JSlider(EARLIEST_TIME, LATEST_TIME, EARLIEST_TIME);
@@ -168,6 +166,8 @@ public class AppView {
         addButton = new JButton("Add");
         removeButton = new JButton("Remove");
         editButton = new JButton("Edit");
+        listModel = new DefaultListModel<>();
+        classList = new JList<>(listModel);
         boxModel = new DefaultComboBoxModel<>();
         comboBox = new JComboBox<>(boxModel);
         classSettingsRightPanel.add(addButton);
