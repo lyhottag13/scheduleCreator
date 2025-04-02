@@ -67,22 +67,16 @@ public class AppModel {
      * @param list    a list of courses.
      */
     public static void createCourseList(Element content, ArrayList<Course> list) {
+        String name = content.select("h3").text().trim().substring(0, 6);
         Elements classRows = content.select("table tbody tr.class-specs*");
         for (Element row : classRows) {
             String checker = row.select(".class-location div").text();
             if (checker.contains("Online") || checker.contains("Pecos") || williamsAllowed(checker)) {
                 int ID = Integer.parseInt(row.select(".class-number").text());
                 boolean isOnline = row.select(".class-delivery div").text().contains("Online");
-                String stringOfDays = row.select(".class-days").text().trim();
-                int numberOfDays = 1;
                 String times = row.select(".class-times div").text();
-                for (int i = 0; i < stringOfDays.length(); i++) {
-                    if (stringOfDays.charAt(i) == ',') {
-                        numberOfDays++;
-                    }
-                }
-//                int[][] times2 = convertAllTimes1(times, stringOfDays, numberOfDays);
-                list.add(new Course(content.select("h3").text().trim().substring(0, 6), ID, isOnline, times, stringOfDays));
+                String stringOfDays = row.select(".class-days").text().trim();
+                list.add(new Course(name, ID, isOnline, times, stringOfDays));
             }
         }
     }
@@ -189,14 +183,14 @@ public class AppModel {
      * the time constraints.
      */
     private static boolean isWithinTimeConstraints(Course course, int[] constraints) {
-        int courseStartTime = convertAllTimes1(course.times(), course.days())[0][0] % 10000;
-        int courseEndTime = convertAllTimes1(course.times(), course.days())[0][1] % 10000;
+        int courseStartTime = convertAllTimes(course.times(), course.days())[0][0] % 10000;
+        int courseEndTime = convertAllTimes(course.times(), course.days())[0][1] % 10000;
         return (courseStartTime >= constraints[0] && courseEndTime <= constraints[1]);
     }
 
     private static boolean isCompatible(Course course1, Course course2) {
-        int[][] times1 = convertAllTimes1(course1.times(), course1.days());
-        int[][] times2 = convertAllTimes1(course2.times(), course2.days());
+        int[][] times1 = convertAllTimes(course1.times(), course1.days());
+        int[][] times2 = convertAllTimes(course2.times(), course2.days());
         for (int[] row1 : times1) {
             for (int i1 : row1) {
                 for (int[] row2 : times2) {
@@ -257,17 +251,7 @@ public class AppModel {
      * @param days a string representation of the days, such as M,W.
      * @return a converted int matrix with all the times converted.
      */
-    public static int[][] convertAllTimes(String[] list, String days) {
-        Scanner scan = new Scanner(days);
-        scan.useDelimiter(",");
-        int[][] output = new int[list.length][1];
-        for (int i = 0; i < output.length; i++) {
-            output[i] = convertToDay(convertToMilitaryTime(list[i]), scan.next());
-        }
-        scan.close();
-        return output;
-    }
-    public static int[][] convertAllTimes1(String times, String days) {
+    public static int[][] convertAllTimes(String times, String days) {
         int numberOfDays = 1;
         for (int i = 0; i < days.length(); i++) {
             if (days.charAt(i) == ',') {
@@ -351,16 +335,17 @@ public class AppModel {
         return validSchedules;
     }
 
+    /**
+     * Checks to see if the name of a class inputted is valid. For example, a class name of "AAA000" would be valid since it has all the properties of an actual class name.
+     *
+     * @param className the name of the class to be checked.
+     * @return whether the class name is valid.
+     */
     public boolean isValidName(String className) {
         if (className.length() != 6) {
             return false;
         }
         char[] letters = className.toCharArray();
-        for (int i = 0; i < 3; i++) {
-            if (!Character.isLetter(letters[i])) {
-                return false;
-            }
-        }
         for (int i = 3; i < 6; i++) {
             if (!Character.isDigit(letters[i])) {
                 return false;
