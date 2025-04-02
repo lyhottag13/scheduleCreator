@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 
 public class AppController {
     AppView view;
@@ -18,10 +17,11 @@ public class AppController {
 
     public void initialize() {
         try {
-            model.fillComboBox(view.getComboBoxModel());
+            model.readWebsite(view);
         } catch (Exception e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Could not connect.", "Error", JOptionPane.ERROR_MESSAGE, null);
         }
+        model.setCampus("pecos");
         view.setAddButtonListener(e -> handleAddButton());
         view.setEditButtonListener(e -> handleEditButton());
         view.setRemoveButtonListener(e -> handleRemoveButton());
@@ -33,11 +33,8 @@ public class AppController {
                 toggleScreen();
             }
         });
-        view.setFallButtonListener(e -> AppModel.setSemester("fall"));
-        view.setSpringButtonListener(e -> AppModel.setSemester("spring"));
-        view.setSummerButtonListener(e -> AppModel.setSemester("summer"));
-        view.setPecosButtonListener(e -> AppModel.setCampus("pecos"));
-        view.setPecosAndWilliamsButtonListener(e -> AppModel.setCampus("pecosAndWilliams"));
+        view.setPecosButtonListener(e -> model.setCampus("pecos"));
+        view.setPecosAndWilliamsButtonListener(e -> model.setCampus("pecosAndWilliams"));
         view.setIdentificationInputKeyAdapter(new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -110,7 +107,7 @@ public class AppController {
         AppModel.totalPossibleSchedules = 0;
         try {
             view.getResults().setText(
-                    AppModel.createValidScheduleString(view.getNumberOfCourses(), view.getTimeConstraints(), view.getYear(), view.getSemesterButtonGroup(), view.getCourseNames()) + "\nBased on your filters, I displayed "
+                    AppModel.createValidScheduleString(view.getNumberOfCourses(), view.getTimeConstraints(), model.getSemesterValue(), view.getCourseNames()) + "\nBased on your filters, I displayed "
                             + AppModel.getValidSchedules().size() + " of " + AppModel.totalPossibleSchedules
                             + " possible schedules.\n\n\n");
             return true;

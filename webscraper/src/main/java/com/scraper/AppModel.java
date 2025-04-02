@@ -3,6 +3,7 @@ package com.scraper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Scanner;
 
 import org.jsoup.Jsoup;
@@ -21,19 +22,18 @@ public class AppModel {
         SUMMER
     }
 
-    private static Constants semesterSelection;
     private static Constants campusSelection;
     private static ArrayList<Course>[] classSchedules;
     private static ArrayList<ListOfCourses<Course>> validSchedules;
     private static int[] timeConstraints;
+    private static HashMap<JRadioButton, Integer> map;
+    private static int semesterValue;
     public static int totalPossibleSchedules = 0;
 
     @SuppressWarnings("unchecked")
 
 
-    public static String createValidScheduleString(int numberOfClasses, int[] timeConstraintsInput,
-                                                   int courseYear,
-                                                   int courseSemester, String[] classNames) throws Exception {
+    public static String createValidScheduleString(int numberOfClasses, int[] timeConstraintsInput, int courseSemester, String[] classNames) throws Exception {
         boolean invalidScrape = false;
         StringBuilder invalidClasses = new StringBuilder();
         validSchedules = new ArrayList<>();
@@ -41,7 +41,7 @@ public class AppModel {
         timeConstraints = timeConstraintsInput;
         for (int i = 0; i < numberOfClasses; i++) {
             String url2 = "https://classes.sis.maricopa.edu/?keywords=" + classNames[i].toLowerCase()
-                    + "&all_classes=false&terms%5B%5D=" + (4252 + (courseYear - 2025) * 6 + courseSemester * 2)
+                    + "&all_classes=false&terms%5B%5D=" + courseSemester
                     + "&institutions%5B%5D=CGC08&subject_code=&credit_career=B&credits_min=gte0&credits_max=lte9&start_hour=&end_hour=&startafter=&instructors=";
             classSchedules[i] = scrape(url2);
             if (classSchedules[i].isEmpty()) {
@@ -253,7 +253,6 @@ public class AppModel {
      * Converts each time in the matrix to a time that matches its day to make the
      * later comparisons simpler.
      *
-     * @param list the complete list of times.
      * @param days a string representation of the days, such as M,W.
      * @return a converted int matrix with all the times converted.
      */
@@ -305,29 +304,15 @@ public class AppModel {
         return output;
     }
 
-    public static void setSemester(String semester) {
-        switch (semester) {
-            case "fall":
-                semesterSelection = Constants.FALL;
-                break;
-            case "spring":
-                semesterSelection = Constants.SPRING;
-                break;
-            case "summer":
-                semesterSelection = Constants.SUMMER;
-                break;
-        }
+    public void setSemesterValue(int value) {
+        semesterValue = value;
     }
 
-    public static int getSemester() {
-        return switch (semesterSelection) {
-            case Constants.SUMMER -> 1;
-            case Constants.FALL -> 2;
-            default -> 0;
-        };
+    public int getSemesterValue() {
+        return semesterValue;
     }
 
-    public static void setCampus(String campus) {
+    public void setCampus(String campus) {
         switch (campus) {
             case "pecos":
                 campusSelection = Constants.PECOS;
@@ -339,6 +324,10 @@ public class AppModel {
 
     public static ArrayList<ListOfCourses<Course>> getValidSchedules() {
         return validSchedules;
+    }
+
+    public HashMap<JRadioButton, Integer> getMap() {
+        return map;
     }
 
     /**
@@ -360,12 +349,32 @@ public class AppModel {
         return true;
     }
 
-    public void fillComboBox(DefaultComboBoxModel<String> boxModel) throws IOException {
-        Document document = Jsoup.connect("https://classes.sis.maricopa.edu/").userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36").get();
+    public void fillComboBox(Document document, AppView view) {
         Elements subjectList = document.select("select#subject_code option");
         for (Element subjectName : subjectList) {
-            boxModel.addElement(subjectName.text());
+            view.getComboBoxModel().addElement(subjectName.text());
         }
-        boxModel.removeElementAt(0);
+        view.getComboBoxModel().removeElementAt(0);
+    }
+
+    public void setSemesterButtons(Document document, AppView view) {
+        Elements semesterList = document.select("#terms .form-check");
+        int i = 0;
+        for (Element semester : semesterList) {
+            JRadioButton button = view.getSemesterRadioButtons()[i];
+            button.setName(semester.select("input").attr("value"));
+            button.setText(semester.select("label").text());
+            button.addActionListener(e -> {
+                setSemesterValue(Integer.parseInt(button.getName()));
+            });
+            i++;
+        }
+        view.getSemesterRadioButtons()[0].doClick();
+    }
+
+    public void readWebsite(AppView view) throws IOException {
+        Document document = Jsoup.connect("https://classes.sis.maricopa.edu/").userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36").get();
+        fillComboBox(document, view);
+        setSemesterButtons(document, view);
     }
 }

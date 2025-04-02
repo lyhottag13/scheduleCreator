@@ -1,5 +1,8 @@
 package com.scraper;
 
+import org.jdesktop.swingx.JXMultiThumbSlider;
+import org.jdesktop.swingx.multislider.TrackRenderer;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -15,10 +18,12 @@ public class AppView {
     private JPanel backgroundPanel, settingsPanel, classSettingsPanel,
             backgroundPanel2, mainPanel, choicePanel;
     private JPanel classSettingsLeftPanel, classSettingsRightPanel;
+    private JPanel semesterRadioPanel, campusRadioPanel;
     private JScrollPane scrollPane;
     private JList<String> classList;
     private DefaultListModel<String> listModel;
     private JRadioButton pecos, pecosAndWilliams, fall, spring, summer;
+    private JRadioButton[] buttons;
     private ButtonGroup campusButtonGroup, semesterButtonGroup;
     private JSlider timeSlider, timeSlider2;
     private JButton addButton, removeButton, editButton, createButton, tryAgainButton;
@@ -27,7 +32,7 @@ public class AppView {
     private JSpinner spinner;
     private DefaultComboBoxModel<String> boxModel;
     private JComboBox<String> comboBox;
-    private final int NUMBER_OF_SETTINGS = 4;
+    private final int NUMBER_OF_SETTINGS = 3;
 
     public AppView() {
         initialize();
@@ -93,10 +98,9 @@ public class AppView {
             panelsInSettings[i].setBorder(new LineBorder(new Color(0, 0, 0)));
         }
         JLabel[] labels = new JLabel[NUMBER_OF_SETTINGS];
-        labels[0] = new JLabel("Year");
-        labels[1] = new JLabel("Time (Military Format, 2:00 PM = 1400)");
-        labels[2] = new JLabel("Semester");
-        labels[3] = new JLabel("Campus");
+        labels[0] = new JLabel("Time (Military Format, 2:00 PM = 1400)");
+        labels[1] = new JLabel("Semester");
+        labels[2] = new JLabel("Campus");
 
         spinner = new JSpinner(new SpinnerNumberModel(Year.now().getValue(), Year.now().getValue(), Year.now().getValue() + 1, 1));
         JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, "0");
@@ -104,29 +108,24 @@ public class AppView {
         spinner.setEditor(editor);
 
         // Radio Buttons.
+        semesterButtonGroup = new ButtonGroup();
+        semesterRadioPanel = new JPanel();
+        buttons = new JRadioButton[3];
+        for (int i = 0; i < 3; i++) {
+            buttons[i] = new JRadioButton();
+            semesterRadioPanel.add(buttons[i]);
+            semesterButtonGroup.add(buttons[i]);
+        }
         pecos = new JRadioButton("Pecos");
         pecosAndWilliams = new JRadioButton("Pecos & Williams");
-        fall = new JRadioButton("Fall");
-        spring = new JRadioButton("Spring");
-        summer = new JRadioButton("Summer");
         campusButtonGroup = new ButtonGroup();
-        semesterButtonGroup = new ButtonGroup();
-        JPanel campusRadioPanel = new JPanel();
+        campusRadioPanel = new JPanel();
         campusButtonGroup.add(pecos);
         campusButtonGroup.add(pecosAndWilliams);
         campusRadioPanel.add(pecos);
         campusRadioPanel.add(pecosAndWilliams);
-        JPanel semesterRadioPanel = new JPanel();
-        semesterButtonGroup.add(fall);
-        semesterButtonGroup.add(spring);
-        semesterButtonGroup.add(summer);
-        semesterRadioPanel.add(fall);
-        semesterRadioPanel.add(spring);
-        semesterRadioPanel.add(summer);
-        fall.setSelected(true);
+        buttons[0].setSelected(true);
         pecos.setSelected(true);
-        AppModel.setCampus("pecos");
-        AppModel.setSemester("fall");
 
         // Sliders
         timeSlider.setPaintTicks(true);
@@ -147,10 +146,9 @@ public class AppView {
 
         // This adds the components and their labels together.
         JComponent[] doodads = new JComponent[NUMBER_OF_SETTINGS];
-        doodads[0] = spinner;
-        doodads[1] = sliderHolder;
-        doodads[2] = semesterRadioPanel;
-        doodads[3] = campusRadioPanel;
+        doodads[0] = sliderHolder;
+        doodads[1] = semesterRadioPanel;
+        doodads[2] = campusRadioPanel;
         for (int i = 0; i < NUMBER_OF_SETTINGS; i++) {
             panelsInSettings[i].add(labels[i], BorderLayout.NORTH);
             panelsInSettings[i].add(doodads[i], BorderLayout.CENTER);
@@ -163,6 +161,7 @@ public class AppView {
         classSettingsPanel.setBorder(new TitledBorder("Classes"));
         classSettingsLeftPanel = new JPanel(new BorderLayout());
         classSettingsRightPanel = new JPanel(new GridLayout(3, 1));
+
         addButton = new JButton("Add");
         removeButton = new JButton("Remove");
         editButton = new JButton("Edit");
@@ -170,6 +169,7 @@ public class AppView {
         classList = new JList<>(listModel);
         boxModel = new DefaultComboBoxModel<>();
         comboBox = new JComboBox<>(boxModel);
+
         classSettingsRightPanel.add(addButton);
         classSettingsRightPanel.add(removeButton);
         classSettingsRightPanel.add(editButton);
@@ -277,15 +277,23 @@ public class AppView {
         return identificationInput;
     }
 
+    public ButtonGroup getSemesterButtonGroup() {
+        return semesterButtonGroup;
+    }
+
+    public JPanel getSemesterRadioPanel() {
+        return semesterRadioPanel;
+    }
+
+    public JRadioButton[] getSemesterRadioButtons() {
+        return buttons;
+    }
+
     public int getNumberOfCourses() throws Exception {
         if (listModel.isEmpty()) {
             throw new Exception("The number of courses is invalid.");
         }
         return listModel.size();
-    }
-
-    public int getSemesterButtonGroup() {
-        return AppModel.getSemester();
     }
 
     public int[] getTimeConstraints() throws Exception {
