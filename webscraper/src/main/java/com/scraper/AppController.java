@@ -64,8 +64,11 @@ public class AppController {
             return;
         }
         JOptionPane.showConfirmDialog(null, view.getChoicePanel(), "What would you like to change this class to?", JOptionPane.OK_CANCEL_OPTION);
-        String userInput = view.getComboBoxModel().getElementAt(view.getComboBox().getSelectedIndex()) + view.getIdentificationInput().getText();
+        String classLetters = view.getComboBoxModel().getElementAt(view.getComboBox().getSelectedIndex()).substring(0, 3);
+        String classNumbers = view.getIdentificationInput().getText();
+        String userInput = classLetters + classNumbers;
         if (!model.isValidName(userInput)) {
+            System.out.println(userInput);
             JOptionPane.showMessageDialog(null, "Enter a valid name", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
             view.getListModel().set(view.getClassList().getSelectedIndex(), userInput);
@@ -107,8 +110,8 @@ public class AppController {
         AppModel.totalPossibleSchedules = 0;
         try {
             view.getResults().setText(
-                    AppModel.createValidScheduleString(view.getNumberOfCourses(), view.getTimeConstraints(), model.getSemesterValue(), view.getCourseNames()) + "\nBased on your filters, I displayed "
-                            + AppModel.getValidSchedules().size() + " of " + AppModel.totalPossibleSchedules
+                    model.createValidScheduleString(view.getNumberOfCourses(), view.getTimeConstraints(), model.getSemesterValue(), view.getCourseNames()) + "\nBased on your filters, I displayed "
+                            + model.getValidSchedules().size() + " of " + AppModel.totalPossibleSchedules
                             + " possible schedules.\n\n\n");
             return true;
         } catch (Exception e) {

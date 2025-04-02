@@ -3,7 +3,6 @@ package com.scraper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Scanner;
 
 import org.jsoup.Jsoup;
@@ -17,23 +16,19 @@ public class AppModel {
     enum Constants {
         PECOS,
         WILLIAMS,
-        FALL,
-        SPRING,
-        SUMMER
     }
 
     private static Constants campusSelection;
     private static ArrayList<Course>[] classSchedules;
     private static ArrayList<ListOfCourses<Course>> validSchedules;
     private static int[] timeConstraints;
-    private static HashMap<JRadioButton, Integer> map;
     private static int semesterValue;
     public static int totalPossibleSchedules = 0;
 
     @SuppressWarnings("unchecked")
 
 
-    public static String createValidScheduleString(int numberOfClasses, int[] timeConstraintsInput, int courseSemester, String[] classNames) throws Exception {
+    public String createValidScheduleString(int numberOfClasses, int[] timeConstraintsInput, int courseSemester, String[] classNames) throws Exception {
         boolean invalidScrape = false;
         StringBuilder invalidClasses = new StringBuilder();
         validSchedules = new ArrayList<>();
@@ -56,9 +51,9 @@ public class AppModel {
         return convertValidSchedules(numberOfClasses);
     }
 
-    public static ArrayList<Course> scrape(String url) throws IOException {
+    private ArrayList<Course> scrape(String url) throws IOException {
         ArrayList<Course> arrayList = new ArrayList<>();
-        Document document = Jsoup.connect(url).get();
+        Document document = scanWebsite(url);
         Elements classContent = document.select(".course");
         for (Element content : classContent) {
             createCourseList(content, arrayList);
@@ -72,7 +67,7 @@ public class AppModel {
      * @param content the content of a single class ID.
      * @param list    a list of courses.
      */
-    public static void createCourseList(Element content, ArrayList<Course> list) {
+    private void createCourseList(Element content, ArrayList<Course> list) {
         String name = content.select("h3").text().trim().substring(0, 6);
         Elements classRows = content.select("table tbody tr.class-specs*");
         for (Element row : classRows) {
@@ -94,7 +89,7 @@ public class AppModel {
      * @param numberOfClasses the number of classes.
      * @return an easily digestible format for the possible schedules.
      */
-    public static String convertValidSchedules(int numberOfClasses) {
+    private String convertValidSchedules(int numberOfClasses) {
         StringBuilder output = new StringBuilder();
         output.append("\n============ POSSIBLE SCHEDULES ============\n");
         if (validSchedules.isEmpty()) {
@@ -119,7 +114,7 @@ public class AppModel {
      *                location.
      * @return whether the Williams campus is allowed.
      */
-    private static boolean williamsAllowed(String checker) {
+    private boolean williamsAllowed(String checker) {
         if (campusSelection == Constants.WILLIAMS) {
             return checker.contains("Williams");
         }
@@ -133,7 +128,7 @@ public class AppModel {
      * @param numberOfLevels the number of levels the parser will need to iterate
      *                       through.
      */
-    public static void parseCombinations(int numberOfLevels) {
+    private void parseCombinations(int numberOfLevels) {
         ListOfCourses<Course> listOfCourses = new ListOfCourses<>();
         parseCombinations(listOfCourses, numberOfLevels);
     }
@@ -146,7 +141,7 @@ public class AppModel {
      * @param level         the level at which we are currently on. This number
      *                      decreases per loop, until we reach the final level.
      */
-    public static void parseCombinations(ListOfCourses<Course> listOfCourses, int level) {
+    private void parseCombinations(ListOfCourses<Course> listOfCourses, int level) {
         for (int i = 0; i < classSchedules[level].size(); i++) {
             listOfCourses.add(classSchedules[level].get(i));
             if (!ListOfCourses.containsOnlineCourse(listOfCourses)) {
@@ -160,7 +155,7 @@ public class AppModel {
         }
     }
 
-    private static boolean isValidList(ListOfCourses<Course> list, int[] constraints) {
+    private boolean isValidList(ListOfCourses<Course> list, int[] constraints) {
         Course course;
         for (int i = 1; i < list.size(); i++) {
             course = list.get(i);
@@ -188,13 +183,13 @@ public class AppModel {
      * @return a {@code boolean} stating whether this course's timeslots were within
      * the time constraints.
      */
-    private static boolean isWithinTimeConstraints(Course course, int[] constraints) {
+    private boolean isWithinTimeConstraints(Course course, int[] constraints) {
         int courseStartTime = convertAllTimes(course.times(), course.days())[0][0] % 10000;
         int courseEndTime = convertAllTimes(course.times(), course.days())[0][1] % 10000;
         return courseStartTime >= constraints[0] && courseEndTime <= constraints[1];
     }
 
-    private static boolean isCompatible(Course course1, Course course2) {
+    private boolean isCompatible(Course course1, Course course2) {
         int[][] times1 = convertAllTimes(course1.times(), course1.days());
         int[][] times2 = convertAllTimes(course2.times(), course2.days());
         for (int[] row1 : times1) {
@@ -224,7 +219,7 @@ public class AppModel {
      *                   will meet.
      * @return an {@code int[]} array of the start and end times.
      */
-    public static int[] convertToMilitaryTime(String timeString) {
+    public int[] convertToMilitaryTime(String timeString) {
         int[] listOfTimes = new int[]{0, 0};
         if (timeString.charAt(0) == 'N') {
             return listOfTimes;
@@ -256,7 +251,7 @@ public class AppModel {
      * @param days a string representation of the days, such as M,W.
      * @return a converted int matrix with all the times converted.
      */
-    public static int[][] convertAllTimes(String times, String days) {
+    private int[][] convertAllTimes(String times, String days) {
         int numberOfDays = 1;
         for (int i = 0; i < days.length(); i++) {
             if (days.charAt(i) == ',') {
@@ -288,7 +283,7 @@ public class AppModel {
      *              on.
      * @return a converted list of start and end times.
      */
-    public static int[] convertToDay(int[] times, String day) {
+    private int[] convertToDay(int[] times, String day) {
         int[] output = new int[times.length];
         int change = switch (day) {
             case "M" -> 10000;
@@ -322,12 +317,8 @@ public class AppModel {
         }
     }
 
-    public static ArrayList<ListOfCourses<Course>> getValidSchedules() {
+    public ArrayList<ListOfCourses<Course>> getValidSchedules() {
         return validSchedules;
-    }
-
-    public HashMap<JRadioButton, Integer> getMap() {
-        return map;
     }
 
     /**
@@ -364,16 +355,18 @@ public class AppModel {
             JRadioButton button = view.getSemesterRadioButtons()[i];
             button.setName(semester.select("input").attr("value"));
             button.setText(semester.select("label").text());
-            button.addActionListener(e -> {
-                setSemesterValue(Integer.parseInt(button.getName()));
-            });
+            button.addActionListener(e -> setSemesterValue(Integer.parseInt(button.getName())));
             i++;
         }
         view.getSemesterRadioButtons()[0].doClick();
     }
 
+    private Document scanWebsite(String url) throws IOException {
+        return Jsoup.connect(url).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36").get();
+    }
+
     public void readWebsite(AppView view) throws IOException {
-        Document document = Jsoup.connect("https://classes.sis.maricopa.edu/").userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36").get();
+        Document document = scanWebsite("https://classes.sis.maricopa.edu");
         fillComboBox(document, view);
         setSemesterButtons(document, view);
     }

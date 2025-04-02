@@ -1,8 +1,5 @@
 package com.scraper;
 
-import org.jdesktop.swingx.JXMultiThumbSlider;
-import org.jdesktop.swingx.multislider.TrackRenderer;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -22,7 +19,7 @@ public class AppView {
     private JScrollPane scrollPane;
     private JList<String> classList;
     private DefaultListModel<String> listModel;
-    private JRadioButton pecos, pecosAndWilliams, fall, spring, summer;
+    private JRadioButton pecos, pecosAndWilliams;
     private JRadioButton[] buttons;
     private ButtonGroup campusButtonGroup, semesterButtonGroup;
     private JSlider timeSlider, timeSlider2;
@@ -57,7 +54,6 @@ public class AppView {
         createRegularSettings();
 
         // Screen 2, the one that shows the results.
-        createResultsScreen();
 
         createAddPanel();
 
@@ -67,7 +63,8 @@ public class AppView {
         backgroundPanel.add(createButton, BorderLayout.SOUTH);
         frame.add(mainPanel);
         mainPanel.add(backgroundPanel, "panel1");
-        mainPanel.add(backgroundPanel2, "panel2");
+        createResultsScreen();
+
 
         frame.setVisible(true);
         frame.setSize(new Dimension(800, 800));
@@ -89,6 +86,7 @@ public class AppView {
         backgroundPanel2.add(new JLabel("Possible Schedules"));
         backgroundPanel2.add(scrollPane);
         backgroundPanel2.add(tryAgainButton, BorderLayout.SOUTH);
+        mainPanel.add(backgroundPanel2, "panel2");
     }
 
     private void createRegularSettings() {
@@ -215,18 +213,6 @@ public class AppView {
 
     public void setCreateButtonListener(ActionListener listener) {
         createButton.addActionListener(listener);
-    }
-
-    public void setFallButtonListener(ActionListener listener) {
-        fall.addActionListener(listener);
-    }
-
-    public void setSpringButtonListener(ActionListener listener) {
-        spring.addActionListener(listener);
-    }
-
-    public void setSummerButtonListener(ActionListener listener) {
-        summer.addActionListener(listener);
     }
 
     public void setPecosButtonListener(ActionListener listener) {
