@@ -77,7 +77,9 @@ public class AppModel {
                 boolean isOnline = row.select(".class-delivery div").text().contains("Online");
                 String times = row.select(".class-times div").text();
                 String stringOfDays = row.select(".class-days").text().trim();
-                list.add(new Course(name, ID, isOnline, times, stringOfDays));
+                String instructor = row.select(".class-instructors li").text();
+                String location = row.select(".class-location div").text().substring(18);
+                list.add(new Course(name, ID, isOnline, times, stringOfDays, instructor, location));
             }
         }
     }

@@ -1,8 +1,8 @@
 package com.scraper;
 
-public record Course(String name, int ID, boolean isOnline, String times, String days) {
+public record Course(String name, int ID, boolean isOnline, String times, String days, String instructor, String location) {
     public Course(Course course) {
-        this(course.name(), course.ID(), course.isOnline(), course.times(), course.days());
+        this(course.name(), course.ID(), course.isOnline(), course.times(), course.days(), course.instructor(), course.location());
     }
 
     public String toString() {

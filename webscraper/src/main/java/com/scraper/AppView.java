@@ -16,7 +16,10 @@ public class AppView {
             backgroundPanel2, mainPanel, choicePanel;
     private JPanel classSettingsLeftPanel, classSettingsRightPanel;
     private JPanel semesterRadioPanel, campusRadioPanel;
+    private JPanel tablesPanel;
+
     private JScrollPane scrollPane;
+
     private JList<String> classList;
     private DefaultListModel<String> listModel;
     private JRadioButton pecos, pecosAndWilliams;
@@ -29,6 +32,7 @@ public class AppView {
     private JSpinner spinner;
     private DefaultComboBoxModel<String> boxModel;
     private JComboBox<String> comboBox;
+    private JTable[] tables;
     private final int NUMBER_OF_SETTINGS = 3;
 
     public AppView() {
@@ -74,11 +78,12 @@ public class AppView {
 
     private void createResultsScreen() {
         tryAgainButton = new JButton("Try Again?");
+        tablesPanel = new JPanel();
 
         results = new JTextPane();
         results.setEditable(false);
         scrollPane = new JScrollPane();
-        scrollPane.setViewportView(results);
+        scrollPane.setViewportView(tablesPanel);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setPreferredSize(new Dimension(500, 500));
@@ -274,6 +279,24 @@ public class AppView {
     public JRadioButton[] getSemesterRadioButtons() {
         return buttons;
     }
+
+    public JTable[] getTables() {
+        return tables;
+    }
+
+    public void setTables(int numberOfTables) {
+        tables = new JTable[numberOfTables];
+    }
+
+    public JScrollPane getScrollPane() {
+        return scrollPane;
+    }
+
+    public JPanel getTablesPanel() {
+        return tablesPanel;
+    }
+
+
 
     public int getNumberOfCourses() throws Exception {
         if (listModel.isEmpty()) {

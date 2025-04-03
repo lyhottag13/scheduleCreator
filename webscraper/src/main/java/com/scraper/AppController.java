@@ -1,9 +1,12 @@
 package com.scraper;
 
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 public class AppController {
     AppView view;
@@ -113,9 +116,51 @@ public class AppController {
                     model.createValidScheduleString(view.getNumberOfCourses(), view.getTimeConstraints(), model.getSemesterValue(), view.getCourseNames()) + "\nBased on your filters, I displayed "
                             + model.getValidSchedules().size() + " of " + AppModel.totalPossibleSchedules
                             + " possible schedules.\n\n\n");
+
+            ArrayList<ListOfCourses<Course>> validSchedules = model.getValidSchedules();
+            view.getTablesPanel().removeAll();
+            view.setTables(validSchedules.size());
+            view.getTablesPanel().setPreferredSize(new Dimension(900, validSchedules.size() * 150));
+            JTable[] tables = view.getTables();
+            for (int i = 0; i < model.getValidSchedules().size(); i++) {
+
+                {
+                    ListOfCourses<Course> list = model.getValidSchedules().get(i);
+                    String[][] tableData = new String[list.size()][7];
+                    for (int j = 0; j < list.size(); j++) {
+                        Course newCourse = list.get(j);
+                        tableData[j][0] = Integer.toString(newCourse.ID());
+                        tableData[j][1] = newCourse.name();
+                        tableData[j][2] = newCourse.location();
+                        tableData[j][3] = newCourse.days();
+                        tableData[j][4] = newCourse.times();
+                        tableData[j][5] = newCourse.instructor();
+                    }
+                    String[] col = new String[]{"ID", "Name", "Location", "Days", "Times", "Instructor"};
+                    tables[i] = new JTable(tableData, col);
+                    tables[i].setCellSelectionEnabled(false);
+                    tables[i].setDefaultEditor(Object.class, null);
+                    tables[i].setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+                    tables[i].getTableHeader().setReorderingAllowed(false);
+                    tables[i].getColumnModel().getColumn(0).setPreferredWidth(5);
+                    tables[i].getColumnModel().getColumn(1).setPreferredWidth(6);
+                    tables[i].getColumnModel().getColumn(3).setPreferredWidth(1);
+                    tables[i].getColumnModel().getColumn(4).setPreferredWidth(30);
+                }
+
+                JScrollPane pane = new JScrollPane();
+                pane.setPreferredSize(new Dimension(500, 100));
+                pane.setViewportView(tables[i]);
+                JPanel tablesPanel2 = new JPanel();
+                tablesPanel2.setSize(new Dimension(400, 50));
+                tablesPanel2.add(new JLabel("Schedule " + (i + 1)));
+                tablesPanel2.add(pane);
+                view.getTablesPanel().add(tablesPanel2);
+            }
             return true;
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
         return false;
     }
