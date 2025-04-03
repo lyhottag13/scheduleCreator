@@ -84,7 +84,7 @@ public class AppView {
         results.setEditable(false);
         scrollPane = new JScrollPane();
         scrollPane.setViewportView(tablesPanel);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setPreferredSize(new Dimension(500, 500));
         backgroundPanel2 = new JPanel(new BorderLayout());

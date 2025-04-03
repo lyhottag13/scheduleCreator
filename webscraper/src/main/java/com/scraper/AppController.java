@@ -120,7 +120,7 @@ public class AppController {
             ArrayList<ListOfCourses<Course>> validSchedules = model.getValidSchedules();
             view.getTablesPanel().removeAll();
             view.setTables(validSchedules.size());
-            view.getTablesPanel().setPreferredSize(new Dimension(900, validSchedules.size() * 150));
+            view.getTablesPanel().setPreferredSize(new Dimension(300, validSchedules.size() * 130));
             JTable[] tables = view.getTables();
             for (int i = 0; i < model.getValidSchedules().size(); i++) {
 
@@ -145,14 +145,14 @@ public class AppController {
                     tables[i].getColumnModel().getColumn(0).setPreferredWidth(5);
                     tables[i].getColumnModel().getColumn(1).setPreferredWidth(6);
                     tables[i].getColumnModel().getColumn(3).setPreferredWidth(1);
-                    tables[i].getColumnModel().getColumn(4).setPreferredWidth(30);
+                    tables[i].getColumnModel().getColumn(4).setPreferredWidth(100);
                 }
 
                 JScrollPane pane = new JScrollPane();
-                pane.setPreferredSize(new Dimension(500, 100));
+                pane.setPreferredSize(new Dimension(600, 130));
                 pane.setViewportView(tables[i]);
                 JPanel tablesPanel2 = new JPanel();
-                tablesPanel2.setSize(new Dimension(400, 50));
+                tablesPanel2.setSize(new Dimension(300, 50));
                 tablesPanel2.add(new JLabel("Schedule " + (i + 1)));
                 tablesPanel2.add(pane);
                 view.getTablesPanel().add(tablesPanel2);
