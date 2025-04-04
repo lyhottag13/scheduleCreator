@@ -70,7 +70,7 @@ public class AppModel {
         for (Element row : classRows) {
             String checker = row.select(".class-location div").text();
             if (checker.contains("Online") || checker.contains("Pecos") || williamsAllowed(checker)) {
-                int ID = Integer.parseInt(row.select(".class-number").text());
+                String ID = row.select(".class-number").text();
                 boolean isOnline = row.select(".class-delivery div").text().contains("Online");
                 String times = row.select(".class-times div").text();
                 String stringOfDays = row.select(".class-days").text().trim();

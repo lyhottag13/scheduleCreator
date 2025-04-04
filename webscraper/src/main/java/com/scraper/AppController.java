@@ -152,7 +152,7 @@ public class AppController {
                 String[][] tableData = new String[schedule.size()][7];
                 for (int j = 0; j < schedule.size(); j++) {
                     Course newCourse = schedule.get(j);
-                    tableData[j][0] = Integer.toString(newCourse.ID());
+                    tableData[j][0] = newCourse.ID();
                     tableData[j][1] = newCourse.name();
                     tableData[j][2] = newCourse.location();
                     tableData[j][3] = newCourse.days();
@@ -161,27 +161,28 @@ public class AppController {
                 }
                 tables[i] = new JTable(tableData, new String[]{"ID", "Name", "Location", "Days", "Times", "Instructor"});
                 tables[i].setCellSelectionEnabled(false);
+                tables[i].setFillsViewportHeight(true);
                 tables[i].setDefaultEditor(Object.class, null);
                 tables[i].setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
                 tables[i].getTableHeader().setReorderingAllowed(false);
+                tables[i].getTableHeader().setResizingAllowed(false);
                 tables[i].getColumnModel().getColumn(0).setPreferredWidth(5);
                 tables[i].getColumnModel().getColumn(1).setPreferredWidth(6);
                 tables[i].getColumnModel().getColumn(3).setPreferredWidth(1);
                 tables[i].getColumnModel().getColumn(4).setPreferredWidth(100);
             }
             JScrollPane tablePane = new JScrollPane();
-            tablePane.setPreferredSize(new Dimension(600, (int) (tables[i].getRowCount() * tables[i].getRowHeight() + tables[i].getTableHeader().getPreferredSize().getHeight()) + 3));
+            int height = (int) (tables[i].getRowCount() * tables[i].getRowHeight() + tables[i].getTableHeader().getPreferredSize().getHeight() + 3);
+            tablePane.setPreferredSize(new Dimension(600, height));
             tablePane.setViewportView(tables[i]);
-            JPanel smallerTablePanel = new JPanel();
-            smallerTablePanel.setSize(new Dimension(300, 50));
-            smallerTablePanel.add(new JLabel("Schedule " + (i + 1)));
+            JPanel smallerTablePanel = new JPanel(new GridLayout(2, 1));
+//            smallerTablePanel.setPreferredSize(new Dimension(AppView.FRAME_WIDTH - AppView.BORDER_SIZE * 3, height + 50));
+            smallerTablePanel.add(new JLabel("Schedule " + (i + 1)) {{
+                setHorizontalAlignment(SwingConstants.CENTER);
+                setVerticalAlignment(SwingConstants.BOTTOM);
+            }});
             smallerTablePanel.add(tablePane);
             tablesPanel.add(smallerTablePanel);
-            if (i == 0) {
-                smallerTablePanel.setBackground(new Color(100, 100, 100));
-            } else if (i == 1) {
-                smallerTablePanel.setBackground(new Color(255, 70, 70));
-            }
         }
 
         if (validSchedules.isEmpty()) {

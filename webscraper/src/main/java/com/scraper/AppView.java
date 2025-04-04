@@ -8,7 +8,6 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
-import java.time.Year;
 
 public class AppView {
     private JFrame frame;
@@ -23,17 +22,18 @@ public class AppView {
     private JList<String> classList;
     private DefaultListModel<String> listModel;
     private JRadioButton pecos, pecosAndWilliams;
-    private JRadioButton[] buttons;
+    private JRadioButton[] semesterButtons;
     private ButtonGroup campusButtonGroup, semesterButtonGroup;
     private JSlider timeSlider, timeSlider2;
     private JButton addButton, removeButton, editButton, createButton, tryAgainButton;
-    private JTextPane results;
     private JTextField identificationInput;
-    private JSpinner spinner;
     private DefaultComboBoxModel<String> boxModel;
     private JComboBox<String> comboBox;
     private JTable[] tables;
     private final int NUMBER_OF_SETTINGS = 3;
+    public static final int FRAME_HEIGHT = 700;
+    public static final int FRAME_WIDTH = 1000;
+    public static final int BORDER_SIZE = 20;
 
     public AppView() {
         initialize();
@@ -43,7 +43,7 @@ public class AppView {
         frame = new JFrame("Schedule Creator");
         mainPanel = new JPanel(new CardLayout());
         backgroundPanel = new JPanel(new BorderLayout(0, 50));
-        backgroundPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        backgroundPanel.setBorder(new EmptyBorder(BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE));
         settingsPanel = new JPanel(new GridLayout((int) Math.ceil(NUMBER_OF_SETTINGS / 2.0), 2, 50, 10));
         settingsPanel.setBorder(new TitledBorder("Settings"));
         final int EARLIEST_TIME = 6;
@@ -71,26 +71,28 @@ public class AppView {
 
 
         frame.setVisible(true);
-        frame.setSize(new Dimension(800, 800));
+        frame.setSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     private void createResultsScreen() {
-        tryAgainButton = new JButton("Try Again?");
-//        tablesPanel = new JPanel(new GridLayout());
+        JPanel tryAgainButtonPanel = new JPanel();
+        tryAgainButton = new JButton("Try Again?") {{
+            setPreferredSize(new Dimension(FRAME_WIDTH / 3, FRAME_HEIGHT / 20));
+        }};
+        tryAgainButtonPanel.add(tryAgainButton);
 
-        results = new JTextPane();
-        results.setEditable(false);
         scrollPane = new JScrollPane();
         scrollPane.setViewportView(tablesPanel);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setPreferredSize(new Dimension(500, 500));
-        backgroundPanel2 = new JPanel(new BorderLayout());
+//        scrollPane.setPreferredSize(new Dimension(500, 500));
+        backgroundPanel2 = new JPanel(new BorderLayout(20, 20));
+        backgroundPanel2.setBorder(new LineBorder(new Color(0xFFFFFF), BORDER_SIZE));
         backgroundPanel2.add(new JLabel("Possible Schedules"));
         backgroundPanel2.add(scrollPane);
-        backgroundPanel2.add(tryAgainButton, BorderLayout.SOUTH);
+        backgroundPanel2.add(tryAgainButtonPanel, BorderLayout.SOUTH);
         mainPanel.add(backgroundPanel2, "panel2");
     }
 
@@ -105,19 +107,14 @@ public class AppView {
         labels[1] = new JLabel("Semester");
         labels[2] = new JLabel("Campus");
 
-        spinner = new JSpinner(new SpinnerNumberModel(Year.now().getValue(), Year.now().getValue(), Year.now().getValue() + 1, 1));
-        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, "0");
-        editor.getTextField().setEditable(false);
-        spinner.setEditor(editor);
-
         // Radio Buttons.
         semesterButtonGroup = new ButtonGroup();
         semesterRadioPanel = new JPanel();
-        buttons = new JRadioButton[3];
+        semesterButtons = new JRadioButton[3];
         for (int i = 0; i < 3; i++) {
-            buttons[i] = new JRadioButton();
-            semesterRadioPanel.add(buttons[i]);
-            semesterButtonGroup.add(buttons[i]);
+            semesterButtons[i] = new JRadioButton();
+            semesterRadioPanel.add(semesterButtons[i]);
+            semesterButtonGroup.add(semesterButtons[i]);
         }
         pecos = new JRadioButton("Pecos");
         pecosAndWilliams = new JRadioButton("Pecos & Williams");
@@ -127,7 +124,7 @@ public class AppView {
         campusButtonGroup.add(pecosAndWilliams);
         campusRadioPanel.add(pecos);
         campusRadioPanel.add(pecosAndWilliams);
-        buttons[0].setSelected(true);
+        semesterButtons[0].setSelected(true);
         pecos.setSelected(true);
 
         // Sliders
@@ -240,10 +237,6 @@ public class AppView {
         return mainPanel;
     }
 
-    public JTextPane getResults() {
-        return results;
-    }
-
     public JSlider getTimeSlider() {
         return timeSlider;
     }
@@ -277,7 +270,7 @@ public class AppView {
     }
 
     public JRadioButton[] getSemesterRadioButtons() {
-        return buttons;
+        return semesterButtons;
     }
 
     public JTable[] getTables() {
@@ -301,6 +294,9 @@ public class AppView {
         scrollPane.setViewportView(tablesPanel);
     }
 
+    public JPanel getBackgroundPanel2() {
+        return backgroundPanel2;
+    }
 
 
     public int getNumberOfCourses() {
@@ -324,13 +320,4 @@ public class AppView {
         }
         return courseNames;
     }
-
-    public int getYear() throws Exception {
-        int year = (int) spinner.getValue();
-        if (year < 2025 || year > 2100) {
-            throw new Exception("The year is invalid.");
-        }
-        return year;
-    }
-
 }
