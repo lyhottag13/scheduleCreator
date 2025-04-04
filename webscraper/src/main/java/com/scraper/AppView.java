@@ -284,7 +284,7 @@ public class AppView {
         return tables;
     }
 
-    public void setTables(int numberOfTables) {
+    public void setTablesSize(int numberOfTables) {
         tables = new JTable[numberOfTables];
     }
 

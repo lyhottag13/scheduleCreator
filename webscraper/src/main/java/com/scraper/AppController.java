@@ -1,8 +1,6 @@
 package com.scraper;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -20,7 +18,7 @@ public class AppController {
 
     public void initialize() {
         try {
-            model.readWebsite(view);
+            model.createAddPanelAndSemesterButtons(view);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Could not connect.", "Error", JOptionPane.ERROR_MESSAGE, null);
         }
@@ -112,57 +110,60 @@ public class AppController {
     private boolean setResultsText() {
         AppModel.totalPossibleSchedules = 0;
         try {
-            view.getResults().setText(
-                    model.createValidScheduleString(view.getNumberOfCourses(), view.getTimeConstraints(), model.getSemesterValue(), view.getCourseNames()) + "\nBased on your filters, I displayed "
-                            + model.getValidSchedules().size() + " of " + AppModel.totalPossibleSchedules
-                            + " possible schedules.\n\n\n");
-
-            ArrayList<ListOfCourses<Course>> validSchedules = model.getValidSchedules();
-            view.getTablesPanel().removeAll();
-            view.setTables(validSchedules.size());
-            view.getTablesPanel().setPreferredSize(new Dimension(300, validSchedules.size() * 130));
-            JTable[] tables = view.getTables();
-            for (int i = 0; i < model.getValidSchedules().size(); i++) {
-
-                {
-                    ListOfCourses<Course> list = model.getValidSchedules().get(i);
-                    String[][] tableData = new String[list.size()][7];
-                    for (int j = 0; j < list.size(); j++) {
-                        Course newCourse = list.get(j);
-                        tableData[j][0] = Integer.toString(newCourse.ID());
-                        tableData[j][1] = newCourse.name();
-                        tableData[j][2] = newCourse.location();
-                        tableData[j][3] = newCourse.days();
-                        tableData[j][4] = newCourse.times();
-                        tableData[j][5] = newCourse.instructor();
-                    }
-                    String[] col = new String[]{"ID", "Name", "Location", "Days", "Times", "Instructor"};
-                    tables[i] = new JTable(tableData, col);
-                    tables[i].setCellSelectionEnabled(false);
-                    tables[i].setDefaultEditor(Object.class, null);
-                    tables[i].setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-                    tables[i].getTableHeader().setReorderingAllowed(false);
-                    tables[i].getColumnModel().getColumn(0).setPreferredWidth(5);
-                    tables[i].getColumnModel().getColumn(1).setPreferredWidth(6);
-                    tables[i].getColumnModel().getColumn(3).setPreferredWidth(1);
-                    tables[i].getColumnModel().getColumn(4).setPreferredWidth(100);
-                }
-
-                JScrollPane pane = new JScrollPane();
-                pane.setPreferredSize(new Dimension(600, 130));
-                pane.setViewportView(tables[i]);
-                JPanel tablesPanel2 = new JPanel();
-                tablesPanel2.setSize(new Dimension(300, 50));
-                tablesPanel2.add(new JLabel("Schedule " + (i + 1)));
-                tablesPanel2.add(pane);
-                view.getTablesPanel().add(tablesPanel2);
-            }
+            model.createValidSchedules(view.getNumberOfCourses(), view.getTimeConstraints(), model.getSemesterValue(), view.getCourseNames());
+            createTablesPanel();
             return true;
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
         return false;
+    }
+
+    private void createTablesPanel() {
+        final int TABLE_HEIGHT = 130;
+        ArrayList<ListOfCourses<Course>> validSchedules = model.getValidSchedules();
+        JPanel tablesPanel = view.getTablesPanel();
+        tablesPanel.removeAll();
+        view.setTablesSize(validSchedules.size());
+        JTable[] tables = view.getTables();
+        tablesPanel.setPreferredSize(new Dimension(300, validSchedules.size() * TABLE_HEIGHT));
+        tablesPanel.add(new JLabel("Based on your filters, I displayed " + validSchedules.size() + " of " + AppModel.totalPossibleSchedules + " schedules."));
+        for (int i = 0; i < validSchedules.size(); i++) {
+            {
+                ListOfCourses<Course> schedule = model.getValidSchedules().get(i);
+                String[][] tableData = new String[schedule.size()][7];
+                for (int j = 0; j < schedule.size(); j++) {
+                    Course newCourse = schedule.get(j);
+                    tableData[j][0] = Integer.toString(newCourse.ID());
+                    tableData[j][1] = newCourse.name();
+                    tableData[j][2] = newCourse.location();
+                    tableData[j][3] = newCourse.days();
+                    tableData[j][4] = newCourse.times();
+                    tableData[j][5] = newCourse.instructor();
+                }
+                tables[i] = new JTable(tableData, new String[]{"ID", "Name", "Location", "Days", "Times", "Instructor"});
+                tables[i].setCellSelectionEnabled(false);
+                tables[i].setDefaultEditor(Object.class, null);
+                tables[i].setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+                tables[i].getTableHeader().setReorderingAllowed(false);
+                tables[i].getColumnModel().getColumn(0).setPreferredWidth(5);
+                tables[i].getColumnModel().getColumn(1).setPreferredWidth(6);
+                tables[i].getColumnModel().getColumn(3).setPreferredWidth(1);
+                tables[i].getColumnModel().getColumn(4).setPreferredWidth(100);
+            }
+            JScrollPane tablePane = new JScrollPane();
+            tablePane.setPreferredSize(new Dimension(600, (int) (tables[i].getRowCount() * tables[i].getRowHeight() + tables[i].getTableHeader().getPreferredSize().getHeight()) + 3));
+            tablePane.setViewportView(tables[i]);
+            JPanel smallerTablePanel = new JPanel();
+            smallerTablePanel.setSize(new Dimension(300, 50));
+            smallerTablePanel.add(new JLabel("Schedule " + (i + 1)));
+            smallerTablePanel.add(tablePane);
+            tablesPanel.add(smallerTablePanel);
+        }
+        if (validSchedules.isEmpty()) {
+            tablesPanel.add(new JLabel("No Schedules Available!\nTry again with different filters."));
+        }
     }
 
     private void toggleScreen() {

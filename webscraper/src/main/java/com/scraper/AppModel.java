@@ -14,8 +14,7 @@ import javax.swing.*;
 
 public class AppModel {
     enum Constants {
-        PECOS,
-        WILLIAMS,
+        PECOS, WILLIAMS,
     }
 
     private static Constants campusSelection;
@@ -28,17 +27,15 @@ public class AppModel {
     @SuppressWarnings("unchecked")
 
 
-    public String createValidScheduleString(int numberOfClasses, int[] timeConstraintsInput, int courseSemester, String[] classNames) throws Exception {
+    public void createValidSchedules(int numberOfClasses, int[] timeConstraintsInput, int courseSemester, String[] classNames) throws Exception {
         boolean invalidScrape = false;
         StringBuilder invalidClasses = new StringBuilder();
         validSchedules = new ArrayList<>();
         classSchedules = new ArrayList[numberOfClasses];
         timeConstraints = timeConstraintsInput;
         for (int i = 0; i < numberOfClasses; i++) {
-            String url2 = "https://classes.sis.maricopa.edu/?keywords=" + classNames[i].toLowerCase()
-                    + "&all_classes=false&terms%5B%5D=" + courseSemester
-                    + "&institutions%5B%5D=CGC08&subject_code=&credit_career=B&credits_min=gte0&credits_max=lte9&start_hour=&end_hour=&startafter=&instructors=";
-            classSchedules[i] = scrape(url2);
+            String url2 = "https://classes.sis.maricopa.edu/?keywords=" + classNames[i].toLowerCase() + "&all_classes=false&terms%5B%5D=" + courseSemester + "&institutions%5B%5D=CGC08&subject_code=&credit_career=B&credits_min=gte0&credits_max=lte9&start_hour=&end_hour=&startafter=&instructors=";
+            classSchedules[i] = scrapeClassSchedules(url2);
             if (classSchedules[i].isEmpty()) {
                 invalidScrape = true;
                 invalidClasses.append("    ").append(classNames[i]).append("\n");
@@ -48,10 +45,10 @@ public class AppModel {
             throw new Exception("The following classes were invalid." + "\n" + invalidClasses);
         }
         parseCombinations(numberOfClasses - 1);
-        return convertValidSchedules(numberOfClasses);
+        convertValidSchedules(numberOfClasses);
     }
 
-    private ArrayList<Course> scrape(String url) throws IOException {
+    private ArrayList<Course> scrapeClassSchedules(String url) throws IOException {
         ArrayList<Course> arrayList = new ArrayList<>();
         Document document = scanWebsite(url);
         Elements classContent = document.select(".course");
@@ -197,16 +194,14 @@ public class AppModel {
         for (int[] row1 : times1) {
             for (int i1 : row1) {
                 for (int[] row2 : times2) {
-                    if (i1 > row2[0] && i1 < row2[1])
-                        return false;
+                    if (i1 > row2[0] && i1 < row2[1]) return false;
                 }
             }
         }
         for (int[] row2 : times2) {
             for (int i2 : row2) {
                 for (int[] row1 : times1) {
-                    if (i2 > row1[0] && i2 < row1[1])
-                        return false;
+                    if (i2 > row1[0] && i2 < row1[1]) return false;
                 }
             }
         }
@@ -234,9 +229,7 @@ public class AppModel {
             line = scan.next();
             scan2 = new Scanner(line);
             scan2.useDelimiter("[:AMP]+");
-            listOfTimes[i] = (line.endsWith("PM") && !line.startsWith("12"))
-                    ? (Integer.parseInt(scan2.next()) + 12) * 100 + Integer.parseInt(scan2.next())
-                    : Integer.parseInt(scan2.next()) * 100 + Integer.parseInt(scan2.next());
+            listOfTimes[i] = (line.endsWith("PM") && !line.startsWith("12")) ? (Integer.parseInt(scan2.next()) + 12) * 100 + Integer.parseInt(scan2.next()) : Integer.parseInt(scan2.next()) * 100 + Integer.parseInt(scan2.next());
             if (scan.hasNext()) {
                 scan.next();
             }
@@ -247,11 +240,11 @@ public class AppModel {
     }
 
     /**
-     * Converts each time in the matrix to a time that matches its day to make the
-     * later comparisons simpler.
+     * Converts the time for the timeslot into a converted military time for each day. This is done to make the comparisons later easier.
      *
-     * @param days a string representation of the days, such as M,W.
-     * @return a converted int matrix with all the times converted.
+     * @param times
+     * @param days
+     * @return
      */
     private int[][] convertAllTimes(String times, String days) {
         int numberOfDays = 1;
@@ -367,7 +360,7 @@ public class AppModel {
         return Jsoup.connect(url).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36").get();
     }
 
-    public void readWebsite(AppView view) throws IOException {
+    public void createAddPanelAndSemesterButtons(AppView view) throws IOException {
         Document document = scanWebsite("https://classes.sis.maricopa.edu");
         fillComboBox(document, view);
         setSemesterButtons(document, view);
