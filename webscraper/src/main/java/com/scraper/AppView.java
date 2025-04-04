@@ -303,10 +303,7 @@ public class AppView {
 
 
 
-    public int getNumberOfCourses() throws Exception {
-        if (listModel.isEmpty()) {
-            throw new Exception("The number of courses is invalid.");
-        }
+    public int getNumberOfCourses() {
         return listModel.size();
     }
 

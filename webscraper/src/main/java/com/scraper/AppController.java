@@ -110,6 +110,9 @@ public class AppController {
     private boolean setResultsText() {
         AppModel.totalPossibleSchedules = 0;
         try {
+            if (view.getNumberOfCourses() == 0) {
+                throw new Exception("The number of courses is invalid.");
+            }
             model.createValidSchedules(view.getNumberOfCourses(), view.getTimeConstraints(), model.getSemesterValue(), view.getCourseNames());
             createTablesPanel();
             return true;
@@ -120,6 +123,9 @@ public class AppController {
         return false;
     }
 
+    /**
+     * Creates the panel for all the tables, which will get added to the results screen.
+     */
     private void createTablesPanel() {
         ArrayList<ListOfCourses<Course>> validSchedules = model.getValidSchedules();
         view.setTablesSize(validSchedules.size());
@@ -131,13 +137,12 @@ public class AppController {
             setHorizontalAlignment(SwingConstants.CENTER);
             setVerticalAlignment(SwingConstants.CENTER);
         }});
-        for (ArrayList<Course> list : model.getClassSchedules()) {
-            if (ListOfCourses.containsOnlineCourse(list)) {
-                headerPanel.add(new JLabel(model.findOnlineClasses(list.size())) {{
+        for (ListOfCourses<Course> list : model.getClassSchedules()) {
+            if (list.containsOnlineCourse()) {
+                headerPanel.add(new JLabel(model.findOnlineClasses(view.getNumberOfCourses())) {{
                     setHorizontalAlignment(SwingConstants.CENTER);
                     setVerticalAlignment(SwingConstants.CENTER);
                 }});
-
                 break;
             }
         }

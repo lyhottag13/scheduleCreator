@@ -18,7 +18,7 @@ public class AppModel {
     }
 
     private static Constants campusSelection;
-    private static ArrayList<Course>[] classSchedules;
+    private static ListOfCourses<Course>[] classSchedules;
     private static ArrayList<ListOfCourses<Course>> validSchedules;
     private static int[] timeConstraints;
     private static int semesterValue;
@@ -31,7 +31,7 @@ public class AppModel {
         boolean invalidScrape = false;
         StringBuilder invalidClasses = new StringBuilder();
         validSchedules = new ArrayList<>();
-        classSchedules = new ArrayList[numberOfClasses];
+        classSchedules = new ListOfCourses[numberOfClasses];
         timeConstraints = timeConstraintsInput;
         for (int i = 0; i < numberOfClasses; i++) {
             String url2 = "https://classes.sis.maricopa.edu/?keywords=" + classNames[i].toLowerCase() + "&all_classes=false&terms%5B%5D=" + courseSemester + "&institutions%5B%5D=CGC08&subject_code=&credit_career=B&credits_min=gte0&credits_max=lte9&start_hour=&end_hour=&startafter=&instructors=";
@@ -48,14 +48,14 @@ public class AppModel {
         findOnlineClasses(numberOfClasses);
     }
 
-    private ArrayList<Course> scrapeClassSchedules(String url) throws IOException {
-        ArrayList<Course> arrayList = new ArrayList<>();
+    private ListOfCourses<Course> scrapeClassSchedules(String url) throws IOException {
+        ListOfCourses<Course> list = new ListOfCourses<>();
         Document document = scanWebsite(url);
         Elements classContent = document.select(".course");
         for (Element content : classContent) {
-            createCourseList(content, arrayList);
+            createCourseList(content, list);
         }
-        return arrayList;
+        return list;
     }
 
     /**
@@ -64,7 +64,7 @@ public class AppModel {
      * @param content the content of a single class ID.
      * @param list    a list of courses.
      */
-    private void createCourseList(Element content, ArrayList<Course> list) {
+    private void createCourseList(Element content, ListOfCourses<Course> list) {
         String name = content.select("h3").text().trim().substring(0, 6);
         Elements classRows = content.select("table tbody tr.class-specs*");
         for (Element row : classRows) {
@@ -307,6 +307,9 @@ public class AppModel {
         return validSchedules;
     }
 
+    public ListOfCourses<Course>[] getClassSchedules() {
+        return classSchedules;
+    }
 
     /**
      * Checks to see if the name of a class inputted is valid. For example, a class name of "AAA000" would be valid since it has all the properties of an actual class name.
