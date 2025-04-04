@@ -45,7 +45,7 @@ public class AppModel {
             throw new Exception("The following classes were invalid." + "\n" + invalidClasses);
         }
         parseCombinations(numberOfClasses - 1);
-        convertValidSchedules(numberOfClasses);
+        findOnlineClasses(numberOfClasses);
     }
 
     private ArrayList<Course> scrapeClassSchedules(String url) throws IOException {
@@ -82,25 +82,16 @@ public class AppModel {
     }
 
     /**
-     * Converts the valid schedules into an easily readable format. Also, if certain
-     * courses are online, the user is notified of that.
+     * Tells the user if certain courses are online.
      *
      * @param numberOfClasses the number of classes.
-     * @return an easily digestible format for the possible schedules.
+     * @return a {@code String} stating which classes were online.
      */
-    private String convertValidSchedules(int numberOfClasses) {
+    public String findOnlineClasses(int numberOfClasses) {
         StringBuilder output = new StringBuilder();
-        output.append("\n============ POSSIBLE SCHEDULES ============\n");
-        if (validSchedules.isEmpty()) {
-            output.append("No possible combinations, sorry!\n");
-            for (int i = 0; i < numberOfClasses; i++) {
-                if (classSchedules[i].getLast().isOnline()) {
-                    output.append(classSchedules[i].getFirst().name()).append(" is available online! Retry the schedule creator without this class.\n");
-                }
-            }
-        } else {
-            for (int i = 0; i < validSchedules.size(); i++) {
-                output.append("Schedule ").append(i + 1).append(":\n").append(validSchedules.get(i)).append("\n");
+        for (int i = 0; i < numberOfClasses; i++) {
+            if (classSchedules[i].getLast().isOnline()) {
+                output.append(classSchedules[i].getFirst().name()).append(" is also available online!  ");
             }
         }
         return output.toString();
@@ -143,7 +134,7 @@ public class AppModel {
     private void parseCombinations(ListOfCourses<Course> listOfCourses, int level) {
         for (int i = 0; i < classSchedules[level].size(); i++) {
             listOfCourses.add(classSchedules[level].get(i));
-            if (!ListOfCourses.containsOnlineCourse(listOfCourses)) {
+            if (!listOfCourses.containsOnlineCourse()) {
                 if (level == 0 && isValidList(listOfCourses, timeConstraints)) {
                     validSchedules.add(new ListOfCourses<>(listOfCourses));
                 } else if (level != 0) {
@@ -240,11 +231,11 @@ public class AppModel {
     }
 
     /**
-     * Converts the time for the timeslot into a converted military time for each day. This is done to make the comparisons later easier.
+     * Converts the time for the timeslot into a converted military time for each day. This is done to make the compatibility checks between courses easier.
      *
-     * @param times
-     * @param days
-     * @return
+     * @param times the start and end times for the timeslot, as "XX:XXAM - XX:XXPM".
+     * @param days  the days which the class will be meeting, as "M,W,F"
+     * @return an {@code int[]} representing the timeslot's beginning and end times in military time, with modifications made based on its day.
      */
     private int[][] convertAllTimes(String times, String days) {
         int numberOfDays = 1;
@@ -315,6 +306,7 @@ public class AppModel {
     public ArrayList<ListOfCourses<Course>> getValidSchedules() {
         return validSchedules;
     }
+
 
     /**
      * Checks to see if the name of a class inputted is valid. For example, a class name of "AAA000" would be valid since it has all the properties of an actual class name.

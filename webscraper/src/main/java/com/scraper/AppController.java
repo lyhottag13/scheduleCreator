@@ -121,14 +121,26 @@ public class AppController {
     }
 
     private void createTablesPanel() {
-        final int TABLE_HEIGHT = 130;
         ArrayList<ListOfCourses<Course>> validSchedules = model.getValidSchedules();
-        JPanel tablesPanel = view.getTablesPanel();
-        tablesPanel.removeAll();
         view.setTablesSize(validSchedules.size());
         JTable[] tables = view.getTables();
-        tablesPanel.setPreferredSize(new Dimension(300, validSchedules.size() * TABLE_HEIGHT));
-        tablesPanel.add(new JLabel("Based on your filters, I displayed " + validSchedules.size() + " of " + AppModel.totalPossibleSchedules + " schedules."));
+        JPanel headerPanel = new JPanel(new GridLayout(2, 1));
+        JPanel tablesPanel = new JPanel(new GridLayout(validSchedules.size() + 1, 1));
+        tablesPanel.add(headerPanel);
+        headerPanel.add(new JLabel("Based on your filters, I displayed " + validSchedules.size() + " of " + AppModel.totalPossibleSchedules + " schedules.") {{
+            setHorizontalAlignment(SwingConstants.CENTER);
+            setVerticalAlignment(SwingConstants.CENTER);
+        }});
+        for (ArrayList<Course> list : model.getClassSchedules()) {
+            if (ListOfCourses.containsOnlineCourse(list)) {
+                headerPanel.add(new JLabel(model.findOnlineClasses(list.size())) {{
+                    setHorizontalAlignment(SwingConstants.CENTER);
+                    setVerticalAlignment(SwingConstants.CENTER);
+                }});
+
+                break;
+            }
+        }
         for (int i = 0; i < validSchedules.size(); i++) {
             {
                 ListOfCourses<Course> schedule = model.getValidSchedules().get(i);
@@ -160,10 +172,20 @@ public class AppController {
             smallerTablePanel.add(new JLabel("Schedule " + (i + 1)));
             smallerTablePanel.add(tablePane);
             tablesPanel.add(smallerTablePanel);
+            if (i == 0) {
+                smallerTablePanel.setBackground(new Color(100, 100, 100));
+            } else if (i == 1) {
+                smallerTablePanel.setBackground(new Color(255, 70, 70));
+            }
         }
+
         if (validSchedules.isEmpty()) {
-            tablesPanel.add(new JLabel("No Schedules Available!\nTry again with different filters."));
+            headerPanel.add(new JLabel("No Schedules Available! Try again with different filters.") {{
+                setHorizontalAlignment(SwingConstants.CENTER);
+                setVerticalAlignment(SwingConstants.CENTER);
+            }});
         }
+        view.setTablesPanel(tablesPanel);
     }
 
     private void toggleScreen() {

@@ -13,14 +13,13 @@ public class ListOfCourses<E> extends LinkedList<Course> {
     }
 
     /**
-     * Checks to see if the list passed into it contains an online course.
+     * Checks to see if this contains an online course.
      *
-     * @param list a list of courses.
      * @return a boolean stating whether this list has an online course in
      * it.
      */
-    public static boolean containsOnlineCourse(ListOfCourses<Course> list) {
-        for (Course c : list) {
+    public boolean containsOnlineCourse() {
+        for (Course c : this) {
             if (c.isOnline()) {
                 return true;
             }

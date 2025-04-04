@@ -78,7 +78,7 @@ public class AppView {
 
     private void createResultsScreen() {
         tryAgainButton = new JButton("Try Again?");
-        tablesPanel = new JPanel();
+//        tablesPanel = new JPanel(new GridLayout());
 
         results = new JTextPane();
         results.setEditable(false);
@@ -294,6 +294,11 @@ public class AppView {
 
     public JPanel getTablesPanel() {
         return tablesPanel;
+    }
+
+    public void setTablesPanel(JPanel panel) {
+        tablesPanel = panel;
+        scrollPane.setViewportView(tablesPanel);
     }
 
 
