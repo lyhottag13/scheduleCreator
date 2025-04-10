@@ -1,4 +1,4 @@
-package com.scraper;
+package com.scraper.app;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

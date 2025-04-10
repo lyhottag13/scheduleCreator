@@ -1,4 +1,4 @@
-package com.scraper;
+package com.scraper.datastructures;
 
 public record Course(String name, String ID, boolean isOnline, String times, String days, String instructor, String location) {
     public Course(Course course) {

@@ -1,4 +1,4 @@
-package com.scraper;
+package com.scraper.datastructures;
 
 import java.util.LinkedList;
 

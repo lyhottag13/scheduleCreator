@@ -1,10 +1,12 @@
-package com.scraper;
+package com.scraper.app;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import com.scraper.datastructures.Course;
+import com.scraper.datastructures.ListOfCourses;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

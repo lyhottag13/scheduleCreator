@@ -1,4 +1,7 @@
-package com.scraper;
+package com.scraper.app;
+
+import com.scraper.datastructures.Course;
+import com.scraper.datastructures.ListOfCourses;
 
 import javax.swing.*;
 import java.awt.*;
@@ -48,6 +51,7 @@ public class AppController {
 
     private void handleAddButton() {
         if (JOptionPane.showConfirmDialog(null, view.getChoicePanel(), "Add a class!", JOptionPane.OK_CANCEL_OPTION) == 0) {
+            view.getComboBox().requestFocusInWindow();
             String className = view.getComboBoxModel().getElementAt(view.getComboBox().getSelectedIndex()).substring(0, 3) + view.getIdentificationInput().getText();
             if (model.isValidName(className)) {
                 view.getListModel().add(0, className.toUpperCase());
