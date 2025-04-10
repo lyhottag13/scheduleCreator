@@ -122,7 +122,6 @@ public class AppController {
             return true;
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
         }
         return false;
     }
@@ -180,7 +179,6 @@ public class AppController {
             tablePane.setPreferredSize(new Dimension(600, height));
             tablePane.setViewportView(tables[i]);
             JPanel smallerTablePanel = new JPanel(new GridLayout(2, 1));
-//            smallerTablePanel.setPreferredSize(new Dimension(AppView.FRAME_WIDTH - AppView.BORDER_SIZE * 3, height + 50));
             smallerTablePanel.add(new JLabel("Schedule " + (i + 1)) {{
                 setHorizontalAlignment(SwingConstants.CENTER);
                 setVerticalAlignment(SwingConstants.BOTTOM);

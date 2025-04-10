@@ -16,7 +16,7 @@ import javax.swing.*;
 
 public class AppModel {
     enum Constants {
-        PECOS, WILLIAMS,
+        PECOS, WILLIAMS
     }
 
     private static Constants campusSelection;
