@@ -24,7 +24,6 @@ public class AppView {
     private JRadioButton pecos, pecosAndWilliams;
     private JRadioButton[] semesterButtons;
     private ButtonGroup campusButtonGroup, semesterButtonGroup;
-    private JSlider timeSlider, timeSlider2;
 
     private JPanel[] sliderPanels;
     private JSlider[] timeSliders;
@@ -71,6 +70,7 @@ public class AppView {
         backgroundPanel.add(createButton, BorderLayout.SOUTH);
         frame.add(mainPanel);
         mainPanel.add(backgroundPanel, "panel1");
+        mainPanel.add(backgroundPanel2, "panel2");
 
 
         frame.setVisible(true);
@@ -99,14 +99,13 @@ public class AppView {
 
     private void createRegularSettings() {
         JPanel[] panelsInSettings = new JPanel[NUMBER_OF_SETTINGS];
-        for (int i = 0; i < NUMBER_OF_SETTINGS; i++) {
-            panelsInSettings[i] = new JPanel(new BorderLayout());
-            panelsInSettings[i].setBorder(new LineBorder(new Color(0, 0, 0)));
-        }
-        JLabel[] labels = new JLabel[NUMBER_OF_SETTINGS];
-        labels[0] = new JLabel("Time (Military Format, 2:00 PM = 1400)");
-        labels[1] = new JLabel("Semester");
-        labels[2] = new JLabel("Campus");
+        LineBorder border = new LineBorder(new Color(0, 0, 0));
+        panelsInSettings[0] = new JPanel(new BorderLayout());
+        panelsInSettings[0].setBorder(new TitledBorder(border, "Time (Military Standard)"));
+        panelsInSettings[1] = new JPanel(new BorderLayout());
+        panelsInSettings[1].setBorder(new TitledBorder(border, "Semester"));
+        panelsInSettings[2] = new JPanel(new BorderLayout());
+        panelsInSettings[2].setBorder(new TitledBorder(border, "Campus"));
 
         // Radio Buttons.
         semesterButtonGroup = new ButtonGroup();
@@ -136,7 +135,6 @@ public class AppView {
         doodads[1] = semesterRadioPanel;
         doodads[2] = campusRadioPanel;
         for (int i = 0; i < NUMBER_OF_SETTINGS; i++) {
-            panelsInSettings[i].add(labels[i], BorderLayout.NORTH);
             panelsInSettings[i].add(doodads[i], BorderLayout.CENTER);
             settingsPanel.add(panelsInSettings[i]);
         }
