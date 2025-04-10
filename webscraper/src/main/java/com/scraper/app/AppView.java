@@ -25,6 +25,11 @@ public class AppView {
     private JRadioButton[] semesterButtons;
     private ButtonGroup campusButtonGroup, semesterButtonGroup;
     private JSlider timeSlider, timeSlider2;
+
+    private JPanel[] sliderPanels;
+    private JSlider[] timeSliders;
+
+
     private JButton addButton, removeButton, editButton, createButton, tryAgainButton;
     private JTextField identificationInput;
     private DefaultComboBoxModel<String> boxModel;
@@ -46,20 +51,19 @@ public class AppView {
         backgroundPanel.setBorder(new EmptyBorder(BORDER_SIZE, BORDER_SIZE, BORDER_SIZE, BORDER_SIZE));
         settingsPanel = new JPanel(new GridLayout((int) Math.ceil(NUMBER_OF_SETTINGS / 2.0), 2, 50, 10));
         settingsPanel.setBorder(new TitledBorder("Settings"));
-        final int EARLIEST_TIME = 6;
-        final int LATEST_TIME = 22;
-        timeSlider = new JSlider(EARLIEST_TIME, LATEST_TIME, EARLIEST_TIME);
-        timeSlider2 = new JSlider(EARLIEST_TIME, LATEST_TIME, LATEST_TIME);
-        // Class Settings.
+        // Creates the panel with the class settings.
         createClassSettings();
 
-        createButton = new JButton("Create");
-        // Regular Settings
+        // Creates the regular settings.
         createRegularSettings();
 
-        // Screen 2, the one that shows the results.
-
+        // Panel that shows when "Add" is clicked.
         createAddPanel();
+
+        // Screen 2, the one that shows the results.
+        createResultsScreen();
+
+        createButton = new JButton("Create");
 
         settingsPanel.setPreferredSize(new Dimension(800, 350));
         backgroundPanel.add(settingsPanel, BorderLayout.NORTH);
@@ -67,7 +71,6 @@ public class AppView {
         backgroundPanel.add(createButton, BorderLayout.SOUTH);
         frame.add(mainPanel);
         mainPanel.add(backgroundPanel, "panel1");
-        createResultsScreen();
 
 
         frame.setVisible(true);
@@ -87,13 +90,11 @@ public class AppView {
         scrollPane.setViewportView(tablesPanel);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-//        scrollPane.setPreferredSize(new Dimension(500, 500));
         backgroundPanel2 = new JPanel(new BorderLayout(20, 20));
         backgroundPanel2.setBorder(new LineBorder(new Color(0xFFFFFF), BORDER_SIZE));
         backgroundPanel2.add(new JLabel("Possible Schedules"));
         backgroundPanel2.add(scrollPane);
         backgroundPanel2.add(tryAgainButtonPanel, BorderLayout.SOUTH);
-        mainPanel.add(backgroundPanel2, "panel2");
     }
 
     private void createRegularSettings() {
@@ -127,22 +128,7 @@ public class AppView {
         semesterButtons[0].setSelected(true);
         pecos.setSelected(true);
 
-        // Sliders
-        timeSlider.setPaintTicks(true);
-        timeSlider.setMajorTickSpacing(1);
-        timeSlider.setPaintLabels(true);
-        timeSlider.setSnapToTicks(true);
-        timeSlider.setPaintTrack(false);
-
-        timeSlider2.setPaintTicks(true);
-        timeSlider2.setMajorTickSpacing(1);
-        timeSlider2.setPaintLabels(true);
-        timeSlider2.setSnapToTicks(true);
-        timeSlider2.setPaintTrack(false);
-
-        JPanel sliderHolder = new JPanel(new GridLayout(2, 1));
-        sliderHolder.add(timeSlider);
-        sliderHolder.add(timeSlider2);
+        JPanel sliderHolder = createSliders();
 
         // This adds the components and their labels together.
         JComponent[] doodads = new JComponent[NUMBER_OF_SETTINGS];
@@ -154,6 +140,29 @@ public class AppView {
             panelsInSettings[i].add(doodads[i], BorderLayout.CENTER);
             settingsPanel.add(panelsInSettings[i]);
         }
+    }
+
+    private JPanel createSliders() {
+        // Sliders
+        final int EARLIEST_TIME = 6;
+        final int LATEST_TIME = 22;
+        timeSliders = new JSlider[]{new JSlider(EARLIEST_TIME, LATEST_TIME, EARLIEST_TIME), new JSlider(EARLIEST_TIME, LATEST_TIME, LATEST_TIME)};
+        sliderPanels = new JPanel[]{new JPanel(new BorderLayout()) {{
+            add(new JLabel("Start Time:"), BorderLayout.WEST);
+        }}, new JPanel(new BorderLayout()) {{
+            add(new JLabel("End Time:"), BorderLayout.WEST);
+        }}};
+        JPanel sliderHolder = new JPanel(new GridLayout(2, 1));
+        for (int i = 0; i < timeSliders.length; i++) {
+            timeSliders[i].setPaintTicks(true);
+            timeSliders[i].setMajorTickSpacing(1);
+            timeSliders[i].setPaintLabels(true);
+            timeSliders[i].setSnapToTicks(true);
+            timeSliders[i].setPaintTrack(false);
+            sliderPanels[i].add(timeSliders[i]);
+            sliderHolder.add(sliderPanels[i]);
+        }
+        return sliderHolder;
     }
 
     private void createClassSettings() {
@@ -206,11 +215,11 @@ public class AppView {
     }
 
     public void setTimeSliderListener(ChangeListener listener) {
-        timeSlider.addChangeListener(listener);
+        timeSliders[0].addChangeListener(listener);
     }
 
     public void setTimeSlider2Listener(ChangeListener listener) {
-        timeSlider2.addChangeListener(listener);
+        timeSliders[1].addChangeListener(listener);
     }
 
     public void setCreateButtonListener(ActionListener listener) {
@@ -238,11 +247,11 @@ public class AppView {
     }
 
     public JSlider getTimeSlider() {
-        return timeSlider;
+        return timeSliders[0];
     }
 
     public JSlider getTimeSlider2() {
-        return timeSlider2;
+        return timeSliders[1];
     }
 
     public DefaultComboBoxModel<String> getComboBoxModel() {
@@ -305,8 +314,8 @@ public class AppView {
 
     public int[] getTimeConstraints() throws Exception {
         int[] timeConstraints = new int[2];
-        timeConstraints[0] = timeSlider.getValue() * 100;
-        timeConstraints[1] = timeSlider2.getValue() * 100;
+        timeConstraints[0] = timeSliders[0].getValue() * 100;
+        timeConstraints[1] = timeSliders[1].getValue() * 100;
         if (timeConstraints[0] > timeConstraints[1]) {
             throw new Exception("The time constraints are invalid.");
         }
